@@ -1,0 +1,67 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
+
+    <RelativeLayout
+        android:id="@+id/dialog_help_root"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:background="#f7f7f7"
+        android:padding="3dp" >
+
+        <TextView
+            android:id="@+id/dialog_help_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="5dp"
+            android:text="LOGO HERE" />
+        
+        <View  
+            android:id="@+id/dialog_help_sep1"          
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_below="@id/dialog_help_logo"
+            android:background="@color/blue_dark" 
+            android:layout_margin="5dp"/>
+
+        <TextView
+            android:id="@+id/dialog_help_message"
+            style="@style/mainFontSmallAlt"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/dialog_help_sep1"
+            android:layout_marginTop="5dp"
+            android:gravity="center_horizontal"
+            android:text="@string/help" />
+        
+        <View  
+            android:id="@+id/dialog_help_sep2"          
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_below="@id/dialog_help_message"
+            android:background="@color/blue_dark" 
+            android:layout_margin="5dp"/>
+
+        <Button
+            android:id="@+id/dialog_help_done"
+            style="@style/mainFontMediumReversi"
+            android:layout_width="75dp"
+            android:layout_height="45dp"
+            android:layout_below="@id/dialog_help_sep2"
+            android:layout_centerInParent="true"
+            android:layout_margin="5dp"
+            android:background="@drawable/button_blue"
+            android:text="Done" />
+
+        <View            
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:layout_below="@id/dialog_help_done"
+            android:background="@color/blue_dark" 
+            android:layout_margin="5dp"/>
+    </RelativeLayout>
+
+</ScrollView>

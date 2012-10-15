@@ -1,0 +1,23 @@
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+	android:shareInterpolator="false" android:interpolator="@android:anim/overshoot_interpolator">
+	<rotate android:fromDegrees="0" android:toDegrees="12"
+		android:toYScale="0.0" android:pivotX="50%" android:pivotY="50%"
+		android:startOffset="0" android:duration="900"
+        android:fillBefore="false" android:fillAfter="true" />
+
+	<scale android:fromXScale="1.0" android:toXScale="0.0"
+		android:fromYScale="1.0" android:toYScale="0.0" android:pivotX="50%"
+		android:pivotY="50%" android:startOffset="0" android:duration="900"
+		android:fillBefore="false" android:fillAfter="true" />
+
+	<translate android:fromYDelta="0%p" android:toYDelta="-100%p"
+		android:startOffset="0" android:duration="900"
+        android:fillBefore="false" android:fillAfter="true" />
+
+	<alpha android:fromAlpha="1.0" android:toAlpha="0.0"
+		android:startOffset="0" android:duration="900"
+        android:fillBefore="false" android:fillAfter="true" />
+
+	<!-- investigate AOSP newer built in anims -->
+	<!-- http://www.google.com/codesearch/p?hl=en&sa=N&cd=1&ct=rc#uX1GffpyOZk/core/res/res/anim/push_up_out.xml -->
+</set>

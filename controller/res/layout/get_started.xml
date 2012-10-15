@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/background" >
+
+    <ImageView
+        android:id="@+id/get_started_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:src="@drawable/logo" />
+
+    <LinearLayout
+        android:id="@+id/get_started_center"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"       
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:orientation="vertical" >
+
+       
+
+        <TextView
+            android:id="@+id/get_started_text"
+            style="@style/mainFontSmallAlt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"            
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:text="@string/getStarted" />
+
+        <TextView
+            android:id="@+id/get_started_wifi_hint"
+            style="@style/mainFontTinyAlt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"            
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/getStartedWiFiHint" />
+    </LinearLayout>   
+
+    <Button
+        android:id="@+id/get_started_button"
+        style="@style/mainFontMediumReversi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/get_started_version"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/button_blue"
+        android:text="Get Started" />
+
+    <TextView
+        android:id="@+id/get_started_version"
+        style="@style/mainFontSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
+        android:text="ver" />
+
+</RelativeLayout>

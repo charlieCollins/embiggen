@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="fsFontLarge">22sp</dimen>
+    <dimen name="fsFontMedium">18sp</dimen>
+    <dimen name="fsFontSmall">15sp</dimen>
+    <dimen name="fsFontTiny">13sp</dimen>
+</resources>

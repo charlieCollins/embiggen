@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="Settings" >
+        <ListPreference
+            android:defaultValue="album_name"
+            android:dialogTitle="Group by"
+            android:entries="@array/bucket_pref_entries"
+            android:entryValues="@array/bucket_pref_values"
+            android:key="galleryBucketSortType"
+            android:summary=""
+            android:title="Group content by" />
+    </PreferenceCategory>
+    
+    <!-- pseudo hidden advanced settings -->
+    <PreferenceCategory android:title="" >
+        <PreferenceScreen>
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:key="testMode"
+                android:summary=""
+                android:title="Test Mode (dev use)" />
+            <Preference
+                android:title="Show Screen Info (dev use)"
+                android:summary=""
+                android:key="showScreenInfo" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+
+</PreferenceScreen>

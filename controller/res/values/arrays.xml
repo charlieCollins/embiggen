@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <array name="bucket_pref_entries">
+        <item>Album name</item>
+        <item>Date taken</item>
+    </array>
+    
+     <array name="bucket_pref_values">
+        <item>album_name</item>
+        <item>date_taken</item>
+    </array>
+
+</resources>
