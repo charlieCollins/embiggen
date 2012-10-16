@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Embiggen</string>    
+    <string name="connecting">Connecting...</string>
+    <string name="footer_text">Download the Embiggen mobile app to get in on the action</string>
+    <string name="share_text">Use your mobile to share pics and videos on the big screen</string>
+    <string name="need_network_text">Embiggen needs a network connection. Please check your system settings.</string>
+    <string name="video_problem">Sorry, that video can\'t be played, please try another</string>
+    <string name="network_connection_lost">Network connection lost</string>
+    <string name="network_connection_restored">Network connection restored</string>
+    <string name="network_connection_not_present">No network connection found, please check your network settings and try again</string>
+</resources>
