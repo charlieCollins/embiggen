@@ -22,16 +22,13 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:gravity="center"
-        android:orientation="vertical" >
-
-        
+        android:orientation="vertical" >        
 
         <TextView
             android:id="@+id/launchchooser_text"
-            style="@style/mainFontMediumAlt"
+            style="@style/altFontMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"            
-            android:layout_centerHorizontal="true"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
@@ -39,20 +36,18 @@
 
         <Button
             android:id="@+id/launchchooser_button_photo"
-            style="@style/mainFontMediumReversi"
+            style="@style/altFontMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"           
-            android:layout_centerHorizontal="true"
             android:layout_marginBottom="10dp"
             android:background="@drawable/button_blue"
             android:text="Select Photos" />
 
         <Button
             android:id="@+id/launchchooser_button_video"
-            style="@style/mainFontMediumReversi"
+            style="@style/altFontMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"            
-            android:layout_centerHorizontal="true"
             android:layout_marginBottom="10dp"
             android:background="@drawable/button_blue"
             android:text="Select Videos" />

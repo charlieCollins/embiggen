@@ -30,7 +30,7 @@
 
     <Button
         android:id="@+id/login_join"
-        style="@style/mainFontMediumReversi"
+        style="@style/altFontMedium"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/login_code"

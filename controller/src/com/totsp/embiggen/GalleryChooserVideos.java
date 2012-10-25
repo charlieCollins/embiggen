@@ -37,7 +37,7 @@ public class GalleryChooserVideos extends BaseActivity {
 
    private static final int PLAY = 1;
    private static final int PAUSE = 2;
-   
+
    private Cursor cursor;
    private ImageLoaderTask loader;
    protected OnTouchListener onTouchListener;
@@ -45,8 +45,9 @@ public class GalleryChooserVideos extends BaseActivity {
    private Gallery gallery;
    private ImageView largePreview;
    private ImageView thumb;
-   
+
    private LinearLayout controls;
+   
    private Button play;
    private Button pause;
 
@@ -55,7 +56,7 @@ public class GalleryChooserVideos extends BaseActivity {
    ///private Bitmap mainBitmap;
    private Drawable borderOn;
    private Drawable borderOff;
-   
+
    private View prevSelectedView;
 
    @Override
@@ -63,14 +64,14 @@ public class GalleryChooserVideos extends BaseActivity {
       super.onCreate(icicle);
 
       setContentView(R.layout.gallery_chooser);
-      
-      borderOn =  getResources().getDrawable(R.drawable.border_on);
-      borderOff =  getResources().getDrawable(R.drawable.border_off);
+
+      borderOn = getResources().getDrawable(R.drawable.border_on);
+      borderOff = getResources().getDrawable(R.drawable.border_off);
 
       largePreview = (ImageView) findViewById(R.id.gallery_chooser_image);
       thumb = (ImageView) findViewById(R.id.gallery_chooser_thumb);
       gallery = (Gallery) findViewById(R.id.gallery_chooser_gallery);
-      
+
       controls = (LinearLayout) findViewById(R.id.gallery_chooser_controls);
       controls.setVisibility(View.VISIBLE);
       play = (Button) findViewById(R.id.gallery_chooser_play);
@@ -78,17 +79,17 @@ public class GalleryChooserVideos extends BaseActivity {
          @Override
          public void onClick(View arg0) {
             sendVideoCommand(PLAY);
-         }         
+         }
       });
       //play.setVisibility(View.INVISIBLE);
       play.setEnabled(false);
-      
+
       pause = (Button) findViewById(R.id.gallery_chooser_pause);
       pause.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View arg0) {
             sendVideoCommand(PAUSE);
-         }         
+         }
       });
       //pause.setVisibility(View.INVISIBLE);
       pause.setEnabled(false);
@@ -101,22 +102,22 @@ public class GalleryChooserVideos extends BaseActivity {
             if (thumb.isShown()) {
                thumb.setVisibility(View.INVISIBLE);
             }
-            
-            ///Log.d(App.LOG_TAG, "onItemSelected position:" + position + " id:" + id);
+
             if (loader != null && loader.getStatus() != ImageLoaderTask.Status.FINISHED) {
                loader.cancel();
             }
 
-            if (id != -1) {               
+            if (id != -1) {
                if (prevSelectedView != null) {
                   prevSelectedView.setBackgroundDrawable(borderOff);
                }
                prevSelectedView = v;
                v.setBackgroundDrawable(borderOn);
-               
+
                Uri uri = Uri.withAppendedPath(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, String.valueOf(id));
-               ///Log.d(App.LOG_TAG, "onItemSelected uri:" + uri);
-               loader = (ImageLoaderTask) new ImageLoaderTask(largePreview, getApplicationContext(), false).execute(uri);
+               loader =
+                        (ImageLoaderTask) new ImageLoaderTask(largePreview, getApplicationContext(), false)
+                                 .execute(uri);
             }
          }
 
@@ -128,21 +129,18 @@ public class GalleryChooserVideos extends BaseActivity {
       Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
       String[] projection = { MediaStore.Video.Media._ID };
       String selectedBucketName = getIntent().getStringExtra(BucketList.BUCKET_NAME);
-      String projectionColumn = getIntent().getStringExtra(BucketList.BUCKET_SORT_BY);      
-     
-      //Log.d(App.LOG_TAG, "using projectionColumn:" + projectionColumn);
-      //Log.d(App.LOG_TAG, "using selectedBucketName:" + selectedBucketName);
-      
+      String projectionColumn = getIntent().getStringExtra(BucketList.BUCKET_SORT_BY);
+
       String selection = null;
       String[] selectionArgs = null;
-      
+
       if (projectionColumn != null && selectedBucketName != null) {
 
          // when using dates we need to convert from display string back to range we can use in query
          if (projectionColumn.startsWith("date")) {
             if (selectedBucketName.equalsIgnoreCase("No Date Available")) {
                selection = projectionColumn + " = -1";
-               selectionArgs = new String[0];               
+               selectionArgs = new String[0];
             } else {
                // convert date format to date range for selection query                        
                try {
@@ -154,7 +152,7 @@ public class GalleryChooserVideos extends BaseActivity {
                   long endMonthStamp = cal.getTimeInMillis();
                   selection = projectionColumn + " >= ? AND " + projectionColumn + " < ?";
                   selectionArgs = new String[2];
-                  selectionArgs[0] = String.valueOf(startMonthStamp);                  
+                  selectionArgs[0] = String.valueOf(startMonthStamp);
                   selectionArgs[1] = String.valueOf(endMonthStamp);
                } catch (ParseException e) {
                   // ignore, leave selection null
@@ -169,28 +167,25 @@ public class GalleryChooserVideos extends BaseActivity {
          }
       }
 
-      ///Log.d(App.LOG_TAG, " QUERY selection:" + selection);
-      ///Log.d(App.LOG_TAG, " QUERY selectionArgs:" + Arrays.toString(selectionArgs));
-      
       if (selection != null) {
          cursor = managedQuery(uri, projection, selection, selectionArgs, MediaStore.Video.Media._ID + " DESC");
       } else {
          cursor = managedQuery(uri, projection, null, null, MediaStore.Video.Media._ID + " DESC");
-      }      
-      
+      }
+
       if (cursor != null) {
          cursor.moveToFirst();
          ImageAdapter adapter = new ImageAdapter(this, cursor, false);
          //Log.d(App.LOG_TAG, "ImageAdapter size = " + adapter.getCount());
          if (adapter.getCount() == 0) {
-            Toast.makeText(this, "Sorry, no content found (choose a different album or date range, and try again).",
-                     Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.message_no_content), Toast.LENGTH_LONG).show();
             finish();
             return;
-         } 
-         gallery.setAdapter(adapter);         
+         }
+         gallery.setAdapter(adapter);
       } else {
-         Toast.makeText(GalleryChooserVideos.this, "Gallery is empty", Toast.LENGTH_SHORT).show();
+         Toast.makeText(GalleryChooserVideos.this, getString(R.string.message_gallery_empty), Toast.LENGTH_LONG)
+                  .show();
       }
 
       anim = AnimationUtils.loadAnimation(this, R.anim.swipe_up);
@@ -232,12 +227,9 @@ public class GalleryChooserVideos extends BaseActivity {
    //
 
    private void sendChoice(long imageId) {
-      //Log.i(App.LOG_TAG, "sendChoice imageId:" + imageId);
-      //MCData data = new MCData();
-      ///String uriString = uri.toString();
+      Log.d(App.LOG_TAG, "sendChoice imageId:" + imageId);
 
       String filePath = getPath(imageId);
-      //data.put("type", "video");
 
       // replace spaces so that URL end is encoded (don't encode entire thing though)
       if (filePath.contains(" ")) {
@@ -245,17 +237,35 @@ public class GalleryChooserVideos extends BaseActivity {
       }
 
       String url = "http://" + app.getWifiIpAddress() + ":" + HTTPServerService.PORT + filePath;
-      //data.put("url", url);
 
-      //Log.i(App.LOG_TAG, "sendChoice filePath:" + filePath);
-      //Log.i(App.LOG_TAG, "sendChoice serving URL:" + url);
+      Log.d(App.LOG_TAG, "sendChoice filePath:" + filePath);
+      Log.d(App.LOG_TAG, "sendChoice serving URL:" + url);
+      
+      // TODO anymore send choice here
 
-      //Log.i(App.LOG_TAG, "sendChoice sending \"displayMedia\" message to hosts: " + data);
       //app.getClient().sendToHosts("displayMedia", data);
+   }
 
-      ///app.logMem();
-   }   
-   
+   private String getPath(long imageId) {
+
+      String projection = MediaStore.Images.Media.DATA;
+      String selection = MediaStore.Images.Media._ID + "=" + imageId;
+
+      Cursor cursor =
+               managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[] { projection }, selection, null,
+                        null);
+      String filePath = null;
+      if (cursor != null) {
+         cursor.moveToFirst();
+         int columnIndex = cursor.getColumnIndex(projection);
+         if (columnIndex != -1) {
+            filePath = cursor.getString(columnIndex);
+         }
+      }
+      return filePath;
+   }
+
+
    private void sendVideoCommand(int command) {
       //Log.i(App.LOG_TAG, "sendVideoCommand");
       //MCData data = new MCData();      
@@ -270,45 +280,21 @@ public class GalleryChooserVideos extends BaseActivity {
             pause.setEnabled(false);
             play.setEnabled(true);
             break;
-      }      
-   }
-
-   private String getPath(long imageId) {
-
-      String projection = MediaStore.Video.Media.DATA;
-      String selection = MediaStore.Video.Media._ID + "=" + imageId;
-
-      ///Log.d(App.LOG_TAG, "getPath imageId:" + imageId);
-      ///Log.d(App.LOG_TAG, "getPath selection:" + selection);
-
-      Cursor cursor =
-               managedQuery(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, new String[] { projection }, selection, null,
-                        null);
-      String filePath = null;
-      if (cursor != null) {
-         cursor.moveToFirst();
-         int columnIndex = cursor.getColumnIndex(projection);
-         if (columnIndex != -1) {
-            filePath = cursor.getString(columnIndex);
-         }
       }
-      return filePath;
    }
 
-   //
-   // MOVL messaging
-   //
-
+  
    // onVideoStatus status
    private static final int NASCENT = -1;
    private static final int STOPPED = 0;
    private static final int PLAYING = 1;
    private static final int PAUSED = 2;
    private static final int ERROR = 3;
-   private static final int COMPLETED = 4; 
-   
+   private static final int COMPLETED = 4;
+
    //private int previousVideoState = -1;
-   
+
+   // TODO messaging FROM server
    /*
    @Override
    public void onMessage(IMCUser sender, final String messageId, final MCData messageData, String target) {
@@ -377,7 +363,7 @@ public class GalleryChooserVideos extends BaseActivity {
    //
    // addtl classes
    //
-   
+
    // gesture detector
    private class SwipeGestureDetector extends SimpleOnGestureListener {
 
@@ -390,16 +376,8 @@ public class GalleryChooserVideos extends BaseActivity {
       @Override
       public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 
-         ///Log.d(App.LOG_TAG, "onFling!!!");
-         ///Log.d(App.LOG_TAG, "REL_SWIPE_MIN_DISTANCE:" + REL_SWIPE_MIN_DISTANCE);
-         ///Log.d(App.LOG_TAG, "REL_SWIPE_MAX_OFF_PATH:" + REL_SWIPE_MAX_OFF_PATH);
-         ///Log.d(App.LOG_TAG, "REL_SWIPE_THRESHOLD_VELOCITY:" + REL_SWIPE_THRESHOLD_VELOCITY);
-
          final float leftRight = e1.getX() - e2.getX();
          final float upDown = e1.getY() - e2.getY();
-
-         ///Log.d(App.LOG_TAG, "leftRight:" + leftRight);
-         ///Log.d(App.LOG_TAG, "upDown:" + upDown);
 
          try {
 
@@ -418,7 +396,6 @@ public class GalleryChooserVideos extends BaseActivity {
 
                //Uri selectedViewUri = (Uri) gallery.getSelectedView().getTag();
                long position = gallery.getSelectedItemPosition();
-               ///Log.d(App.LOG_TAG, "onFling selectedItemPosition:" + position);
 
                // TODO don't go back to cursor (and don't use UI thread)
                cursor.moveToPosition((int) position);

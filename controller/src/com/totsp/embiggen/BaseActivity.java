@@ -1,16 +1,12 @@
 package com.totsp.embiggen;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -18,30 +14,42 @@ import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 
-public abstract class BaseActivity extends Activity {
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockActivity;
+
+public abstract class BaseActivity extends SherlockActivity {
 
    public static final String ANALYTICS_ACCOUNT_ID = "TODO";
    public static final String DO_NOT_TRACK_ACTIVITY_ID = "DO_NOT_TRACK";
 
-   private static final int OPTIONS_MENU_LOGOUT = 0;
-   private static final int OPTIONS_MENU_HELP = 1;
-   private static final int OPTIONS_MENU_PREFS = 2;   
-
+   // TODO ActionBar via ActionBarSherlock (get rid of this menu crap)
+   
+   //private static final int OPTIONS_MENU_LOGOUT = 0;
+   //private static final int OPTIONS_MENU_HELP = 1;
+   //private static final int OPTIONS_MENU_PREFS = 2;
+   
    protected App app;
 
    protected InputMethodManager imm;
    protected ProgressDialog dialog;
    protected Dialog helpDialog;
    
-   protected Handler handler;   
+   protected Handler handler;
+   
+   protected ActionBar actionBar;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       
-      requestWindowFeature(Window.FEATURE_NO_TITLE);
+      //requestWindowFeature(Window.FEATURE_NO_TITLE);
       
       app = (App) this.getApplication();
+      
+      actionBar = this.getSupportActionBar(); 
+      actionBar.setDisplayHomeAsUpEnabled(false);
+      actionBar.setDisplayShowTitleEnabled(true);
+      actionBar.setDisplayUseLogoEnabled(false);
 
       handler = new Handler();
 
@@ -64,7 +72,12 @@ public abstract class BaseActivity extends Activity {
          }         
       });
 
-      imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+      imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);      
+   }  
+
+   @Override
+   protected void onStart() {      
+      super.onStart();      
    }
 
    @Override
@@ -119,23 +132,23 @@ public abstract class BaseActivity extends Activity {
       //app.removeListener(this);
    }
 
+   /*
    @Override
    public boolean onCreateOptionsMenu(Menu menu) {
-      /*
-      if (app.getClient().isConnected()) {
-         menu.add(0, BaseActivity.OPTIONS_MENU_LOGOUT, 0, "Leave/Logout").setIcon(
-                  android.R.drawable.ic_menu_close_clear_cancel);
-      }
-      */
+     
+     
+
       menu.add(1, BaseActivity.OPTIONS_MENU_HELP, 1, "Help").setIcon(
                android.R.drawable.ic_menu_help);
       menu.add(2, BaseActivity.OPTIONS_MENU_PREFS, 2, "Prefs").setIcon(
                android.R.drawable.ic_menu_preferences);
+               
       return true;
    }
 
    @Override
    public boolean onOptionsItemSelected(MenuItem item) {
+     
       switch (item.getItemId()) {
          case OPTIONS_MENU_LOGOUT:
             //app.getClient().leaveRoom();            
@@ -147,8 +160,10 @@ public abstract class BaseActivity extends Activity {
             startActivity(new Intent(this, Preferences.class));
             break;
       }
+      
       return false;
    }
+   */
 
    class TrackPageViewTask extends AsyncTask<String, Void, Void> {
 

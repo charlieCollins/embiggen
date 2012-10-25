@@ -16,23 +16,23 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.apps.analytics.GoogleAnalyticsTracker;
+import com.squareup.otto.Bus;
 import com.totsp.android.util.Installation;
 import com.totsp.server.HTTPServerService;
 
 public class App extends Application {
 
-   public static final String LOG_TAG = "Embiggen-Controller";
-   
-   private ConnectivityManager cMgr;
-   
-   private SharedPreferences prefs;
-   
-   private ServiceConnection connection;
-   private boolean bound;
-   
+   public static final String LOG_TAG = "Embiggen";
+
+   protected SharedPreferences prefs;
+   protected Bus bus;
    protected GoogleAnalyticsTracker tracker;
 
-   // prevent emul bug
+   private ConnectivityManager cMgr;
+   private ServiceConnection connection;
+   private boolean bound;
+
+   // prevent emul issue
    static {
       System.setProperty("java.net.preferIPv4Stack", "true");
       System.setProperty("java.net.preferIPv6Addresses", "false");
@@ -42,22 +42,21 @@ public class App extends Application {
    public void onCreate() {
       super.onCreate();
 
-      // this can only used with Android 2.3 or later
-      /*
-      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
-      */
+      prefs = PreferenceManager.getDefaultSharedPreferences(this);
+      bus = new Bus();
+      bus.register(this);
+      tracker = GoogleAnalyticsTracker.getInstance();
+      tracker.startNewSession(BaseActivity.ANALYTICS_ACCOUNT_ID, 20, this);
 
       cMgr = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-      prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-      // TODO wire in anymote
-      
       connection = new ServiceConnection() {
          @Override
          public void onServiceConnected(ComponentName className, IBinder binder) {
-            //LocalBinder localBinder = (LocalBinder) binder;
-            //service = localBinder.getService();
-            // get ref to service here if need to call methods on it directly
+            /*
+            LocalBinder localBinder = (LocalBinder) binder;
+            HTTPServerService service = localBinder.getService();             
+             */
             bound = true;
             Log.i(App.LOG_TAG, "service connected");
          }
@@ -71,10 +70,10 @@ public class App extends Application {
       };
       Intent intent = new Intent(this, HTTPServerService.class);
       Log.i(App.LOG_TAG, "calling bind service");
-      bindService(intent, connection, Context.BIND_AUTO_CREATE);   
-      
-      tracker = GoogleAnalyticsTracker.getInstance();
-      tracker.startNewSession(BaseActivity.ANALYTICS_ACCOUNT_ID, 20, this);
+      bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+      // TODO anymote      
+
    }
 
    // not guaranteed to be called
@@ -85,26 +84,23 @@ public class App extends Application {
          unbindService(connection);
          bound = false;
       }
-      
+
       tracker.stopSession();
-      
-      
+      bus.unregister(this);
    }
 
    public GoogleAnalyticsTracker getTracker() {
       return this.tracker;
    }
-   
-  
+
    public SharedPreferences getPrefs() {
       return this.prefs;
    }
-   
+
    public String getInstallationId() {
       return Installation.id(this);
    }
 
-   
    //
    // util/helpers for app
    //   
@@ -130,5 +126,5 @@ public class App extends Application {
                   (ipAddress >> 24 & 0xff));
       }
       return null;
-   }   
+   }
 }

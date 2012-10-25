@@ -6,6 +6,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+
 public class LaunchChooser extends BaseActivity {
 
    private Button photo;
@@ -64,4 +68,30 @@ public class LaunchChooser extends BaseActivity {
       }
    }
    */
+   
+   @Override
+   public boolean onCreateOptionsMenu(Menu menu) {
+      MenuInflater inflater = this.getSupportMenuInflater();
+      inflater.inflate(R.menu.chooser, menu);
+      return true;
+   }
+
+   @Override
+   public boolean onOptionsItemSelected(MenuItem item) {
+      switch (item.getItemId()) {
+         case R.id.menu_photos:
+            break;
+         case R.id.menu_videos:
+            break;
+         case R.id.menu_help:
+            helpDialog.show();
+            break;
+         case R.id.menu_prefs:
+            startActivity(new Intent(this, Preferences.class));
+            break;         
+         default:
+            break;
+      }
+      return super.onOptionsItemSelected(item);
+   }  
 }

@@ -32,10 +32,12 @@ import java.util.Date;
 /**
  * Gallery widget Activity that loads images from MediaStore. 
  * 
+ * TODO - lame gallery/widget chooser here, rewrite UI.
+ * 
  * @author ccollins
  *
  */
-public class GalleryChooserPhotos extends BaseActivity {  
+public class GalleryChooserPhotos extends BaseActivity {
 
    private Cursor cursor;
    private ImageLoaderTask loader;
@@ -81,7 +83,6 @@ public class GalleryChooserPhotos extends BaseActivity {
                thumb.setVisibility(View.GONE);
             }
 
-            ///Log.d(App.LOG_TAG, "onItemSelected position:" + position + " id:" + id);
             if (loader != null && loader.getStatus() != ImageLoaderTask.Status.FINISHED) {
                loader.cancel();
             }
@@ -94,7 +95,7 @@ public class GalleryChooserPhotos extends BaseActivity {
                v.setBackgroundDrawable(borderOn);
 
                Uri uri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, String.valueOf(id));
-               ///Log.d(App.LOG_TAG, "onItemSelected uri:" + uri);
+               Log.v(App.LOG_TAG, "onItemSelected uri:" + uri);
                loader = (ImageLoaderTask) new ImageLoaderTask(largePreview, getApplicationContext(), true).execute(uri);
             }
          }
@@ -108,20 +109,20 @@ public class GalleryChooserPhotos extends BaseActivity {
       String[] projection = { MediaStore.Images.Media._ID };
       String selectedBucketName = getIntent().getStringExtra(BucketList.BUCKET_NAME);
       String projectionColumn = getIntent().getStringExtra(BucketList.BUCKET_SORT_BY);
-      
+
       //Log.d(App.LOG_TAG, "using projectionColumn:" + projectionColumn);
       //Log.d(App.LOG_TAG, "using selectedBucketName:" + selectedBucketName);
-      
+
       String selection = null;
       String[] selectionArgs = null;
-      
+
       if (projectionColumn != null && selectedBucketName != null) {
 
          // when using dates we need to convert from display string back to range we can use in query
          if (projectionColumn.startsWith("date")) {
             if (selectedBucketName.equalsIgnoreCase("No Date Available")) {
                selection = projectionColumn + " = -1";
-               selectionArgs = new String[0];               
+               selectionArgs = new String[0];
             } else {
                // convert date format to date range for selection query                        
                try {
@@ -133,7 +134,7 @@ public class GalleryChooserPhotos extends BaseActivity {
                   long endMonthStamp = cal.getTimeInMillis();
                   selection = projectionColumn + " >= ? AND " + projectionColumn + " < ?";
                   selectionArgs = new String[2];
-                  selectionArgs[0] = String.valueOf(startMonthStamp);                  
+                  selectionArgs[0] = String.valueOf(startMonthStamp);
                   selectionArgs[1] = String.valueOf(endMonthStamp);
                } catch (ParseException e) {
                   // ignore, leave selection null
@@ -148,9 +149,7 @@ public class GalleryChooserPhotos extends BaseActivity {
          }
       }
 
-      ///Log.d(App.LOG_TAG, " QUERY selection:" + selection);
-      ///Log.d(App.LOG_TAG, " QUERY selectionArgs:" + Arrays.toString(selectionArgs));
-
+      // TODO get all the db stuff off the main thread
       if (selection != null) {
          cursor = managedQuery(uri, projection, selection, selectionArgs, MediaStore.Images.Media._ID + " DESC");
       } else {
@@ -159,16 +158,14 @@ public class GalleryChooserPhotos extends BaseActivity {
       if (cursor != null) {
          cursor.moveToFirst();
          ImageAdapter adapter = new ImageAdapter(this, cursor, true);
-         ///Log.d(App.LOG_TAG, " ******  ImageAdapter size = " + adapter.getCount());
          if (adapter.getCount() == 0) {
-            Toast.makeText(this, "Sorry, no content found (choose a different album or date range, and try again).",
-                     Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.message_no_content), Toast.LENGTH_LONG).show();
             finish();
             return;
          }
          gallery.setAdapter(adapter);
       } else {
-         Toast.makeText(GalleryChooserPhotos.this, "Gallery is empty", Toast.LENGTH_SHORT).show();
+         Toast.makeText(GalleryChooserPhotos.this, getString(R.string.message_gallery_empty), Toast.LENGTH_LONG).show();
       }
 
       anim = AnimationUtils.loadAnimation(this, R.anim.swipe_up);
@@ -210,12 +207,9 @@ public class GalleryChooserPhotos extends BaseActivity {
    //
 
    private void sendChoice(long imageId) {
-      //Log.i(App.LOG_TAG, "sendChoice imageId:" + imageId);
-      //MCData data = new MCData();
-      ///String uriString = uri.toString();
+      Log.d(App.LOG_TAG, "sendChoice imageId:" + imageId);
 
       String filePath = getPath(imageId);
-      //data.put("type", "photo");
 
       // replace spaces so that URL end is encoded (don't encode entire thing though)
       if (filePath.contains(" ")) {
@@ -223,24 +217,19 @@ public class GalleryChooserPhotos extends BaseActivity {
       }
 
       String url = "http://" + app.getWifiIpAddress() + ":" + HTTPServerService.PORT + filePath;
-      //data.put("url", url);
 
-      //Log.i(App.LOG_TAG, "sendChoice filePath:" + filePath);
-      //Log.i(App.LOG_TAG, "sendChoice serving URL:" + url);
+      Log.d(App.LOG_TAG, "sendChoice filePath:" + filePath);
+      Log.d(App.LOG_TAG, "sendChoice serving URL:" + url);
+      
+      // TODO anymore send choice here
 
-      //Log.i(App.LOG_TAG, "sendChoice sending \"displayMedia\" message to hosts: " + data);
       //app.getClient().sendToHosts("displayMedia", data);
-
-      ///app.logMem();
    }
 
    private String getPath(long imageId) {
 
       String projection = MediaStore.Images.Media.DATA;
       String selection = MediaStore.Images.Media._ID + "=" + imageId;
-
-      ///Log.d(App.LOG_TAG, "getPath imageId:" + imageId);
-      ///Log.d(App.LOG_TAG, "getPath selection:" + selection);
 
       Cursor cursor =
                managedQuery(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[] { projection }, selection, null,
@@ -255,29 +244,31 @@ public class GalleryChooserPhotos extends BaseActivity {
       }
       return filePath;
    }
-/*
-   @Override
-   public void onMessage(IMCUser sender, final String messageId, final MCData messageData, String target) {
-      super.onMessage(sender, messageId, messageData, target);
-      // must run back on UI thread, since MOVLConnect client makes network calls off of main thread
-      this.runOnUiThread(new Runnable() {
-         @Override
-         public void run() {
-            if (messageId.equals("onDisplayMedia")) {
-               //Log.i(App.LOG_TAG, "onDisplayMedia:" + messageData);
-               if (messageData.containsKey("result") && messageData.getInt("result") == 0) {
-                  thumb.setImageDrawable(getResources().getDrawable(R.drawable.thumbs_up));
-                  thumb.setVisibility(View.VISIBLE);
-               } else {
-                  Log.e(App.LOG_TAG, "ERROR display media failed (see data for reason)");
-                  thumb.setImageDrawable(getResources().getDrawable(R.drawable.thumbs_down));
-                  thumb.setVisibility(View.VISIBLE);
+
+   // TODO messaging FROM server
+   /*
+      @Override
+      public void onMessage(IMCUser sender, final String messageId, final MCData messageData, String target) {
+         super.onMessage(sender, messageId, messageData, target);
+         // must run back on UI thread, since MOVLConnect client makes network calls off of main thread
+         this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               if (messageId.equals("onDisplayMedia")) {
+                  //Log.i(App.LOG_TAG, "onDisplayMedia:" + messageData);
+                  if (messageData.containsKey("result") && messageData.getInt("result") == 0) {
+                     thumb.setImageDrawable(getResources().getDrawable(R.drawable.thumbs_up));
+                     thumb.setVisibility(View.VISIBLE);
+                  } else {
+                     Log.e(App.LOG_TAG, "ERROR display media failed (see data for reason)");
+                     thumb.setImageDrawable(getResources().getDrawable(R.drawable.thumbs_down));
+                     thumb.setVisibility(View.VISIBLE);
+                  }
                }
             }
-         }
-      });
-   }
-   */
+         });
+      }
+      */
 
    //
    // addtl classes
@@ -295,16 +286,8 @@ public class GalleryChooserPhotos extends BaseActivity {
       @Override
       public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 
-         ///Log.d(App.LOG_TAG, "onFling!!!");
-         ///Log.d(App.LOG_TAG, "REL_SWIPE_MIN_DISTANCE:" + REL_SWIPE_MIN_DISTANCE);
-         ///Log.d(App.LOG_TAG, "REL_SWIPE_MAX_OFF_PATH:" + REL_SWIPE_MAX_OFF_PATH);
-         ///Log.d(App.LOG_TAG, "REL_SWIPE_THRESHOLD_VELOCITY:" + REL_SWIPE_THRESHOLD_VELOCITY);
-
          final float leftRight = e1.getX() - e2.getX();
          final float upDown = e1.getY() - e2.getY();
-
-         ///Log.d(App.LOG_TAG, "leftRight:" + leftRight);
-         ///Log.d(App.LOG_TAG, "upDown:" + upDown);
 
          try {
 
@@ -323,7 +306,6 @@ public class GalleryChooserPhotos extends BaseActivity {
 
                //Uri selectedViewUri = (Uri) gallery.getSelectedView().getTag();
                long position = gallery.getSelectedItemPosition();
-               ///Log.d(App.LOG_TAG, "onFling selectedItemPosition:" + position);
 
                // TODO don't go back to cursor (and don't use UI thread)
                cursor.moveToPosition((int) position);

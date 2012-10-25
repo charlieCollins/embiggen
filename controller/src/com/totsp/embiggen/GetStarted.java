@@ -79,6 +79,5 @@ public class GetStarted extends BaseActivity {
    private void proceed() {   
       timer.cancel();
       startActivity(new Intent(GetStarted.this, Login.class));
-      //startActivity(new Intent(GetStarted.this, LaunchChooser.class));
    }
 }

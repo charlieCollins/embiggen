@@ -29,7 +29,7 @@
 
         <TextView
             android:id="@+id/dialog_help_message"
-            style="@style/mainFontSmallAlt"
+            style="@style/altFontSmall"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/dialog_help_sep1"
@@ -47,7 +47,7 @@
 
         <Button
             android:id="@+id/dialog_help_done"
-            style="@style/mainFontMediumReversi"
+            style="@style/altFontMedium"
             android:layout_width="75dp"
             android:layout_height="45dp"
             android:layout_below="@id/dialog_help_sep2"

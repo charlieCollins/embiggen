@@ -11,7 +11,6 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 public class Login extends BaseActivity {
 
@@ -19,7 +18,7 @@ public class Login extends BaseActivity {
    private boolean testMode;
 
    private EditText code;
-   private Button join;
+   private Button loginJoin;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -27,12 +26,13 @@ public class Login extends BaseActivity {
       setContentView(R.layout.login);
  
       code = (EditText) findViewById(R.id.login_code);
-      join = (Button) findViewById(R.id.login_join);
+      loginJoin = (Button) findViewById(R.id.login_join);
 
-      join.setOnClickListener(new OnClickListener() {
+      loginJoin.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View v) {
-            advance();
+            //advance();
+            startActivity(new Intent(Login.this, LaunchChooser.class));
          }
       });
 
@@ -40,7 +40,7 @@ public class Login extends BaseActivity {
          @Override
          public boolean onKey(View arg0, int keycode, KeyEvent arg2) {
             if (keycode == KeyEvent.KEYCODE_ENTER) {
-               advance();
+               startActivity(new Intent(Login.this, LaunchChooser.class));
                return true;
             }
             return false;
@@ -110,9 +110,9 @@ if (Environment.MEDIA_MOUNTED.equals(state)) {
        */
       
       if (wifiEnabled && extStorageEnabled) {
-         join.setEnabled(true);
+         loginJoin.setEnabled(true);
       } else {
-         join.setEnabled(false);
+         loginJoin.setEnabled(false);
       }
    }
 
@@ -125,15 +125,8 @@ if (Environment.MEDIA_MOUNTED.equals(state)) {
          //Log.d(App.LOG_TAG, "JOINING ROOM");
          dialog.setMessage("Joining...");
          dialog.show();
-         // TODO investigate, if we don't run in sep thread seems to block, but shouldn't
-         // (joinRoomAsController via API should already run it's own thread via Mina?)
-         new Thread() {
-            public void run() {
-               //app.getClient().joinRoomAsController(code.getText().toString().trim(), app.getInstallationId());
-            }
-         }.start();
-      } else {
-         Toast.makeText(Login.this, "Please enter the full 5 digit TV Code", Toast.LENGTH_SHORT).show();
+         // was joinRoomAsController
+         // TODO anymore wiring         
       }
 
       /*

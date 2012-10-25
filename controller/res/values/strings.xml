@@ -4,5 +4,9 @@
     <string name="getStarted">Use Embiggen to share content from your mobile device to your Google TV</string>
     <string name="getStartedWiFiHint">You must also have the Google TV Embiggen app installed on your TV, and your TV and mobile device must be on the same WiFi network.</string>
     <string name="help"><b>TODO</b></string>
+    
+    <string name="message_no_content">Sorry, no content found (choose a different album or date range, and try again).</string>
+    <string name="message_gallery_empty">Gallery is empty</string>
+    <string name="message_no_results">No results</string>
 
 </resources>

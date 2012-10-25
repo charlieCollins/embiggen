@@ -104,8 +104,6 @@ public class BucketList extends BaseActivity {
       // TODO there are many better/faster ways to filter this, another hack
       List<String> listNamesFiltered = new ArrayList<String>();
       for (String name : listNames) {
-         ///Log.d(App.LOG_TAG, "bucketNamesList entry:" + name); 
-
          if (projectionColumn.startsWith("date")) {
             // convert dates to readable format
             if (name.equals("-1")) {
@@ -165,8 +163,8 @@ public class BucketList extends BaseActivity {
       });
 
       TextView empty = new TextView(this);
-      empty.setTextColor(R.color.blue_dark);
-      empty.setText("No Results");
+      //empty.setTextColor(R.color.blue_dark);
+      empty.setText(R.string.message_no_results);
       empty.setVisibility(View.GONE);
       list.setEmptyView(empty);
       ((ViewGroup) list.getParent()).addView(empty);
