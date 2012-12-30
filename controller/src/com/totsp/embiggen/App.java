@@ -15,22 +15,28 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.google.android.apps.analytics.GoogleAnalyticsTracker;
+import com.google.analytics.tracking.android.GAServiceManager;
+import com.google.analytics.tracking.android.GoogleAnalytics;
+import com.google.analytics.tracking.android.Tracker;
 import com.squareup.otto.Bus;
 import com.totsp.android.util.Installation;
+import com.totsp.embiggen.util.RuntimeLoader;
 import com.totsp.server.HTTPServerService;
 
 public class App extends Application {
 
-   public static final String LOG_TAG = "Embiggen";
+   public static final String TAG = "Embiggen";
 
    protected SharedPreferences prefs;
    protected Bus bus;
-   protected GoogleAnalyticsTracker tracker;
+
+   private RuntimeLoader runtimeLoader;
 
    private ConnectivityManager cMgr;
    private ServiceConnection connection;
    private boolean bound;
+
+   private Tracker gaTracker;
 
    // prevent emul issue
    static {
@@ -42,11 +48,18 @@ public class App extends Application {
    public void onCreate() {
       super.onCreate();
 
-      prefs = PreferenceManager.getDefaultSharedPreferences(this);
+      Log.i(TAG, "Application onCreate");
+
+      runtimeLoader = new RuntimeLoader(this);
+      Log.i(TAG, "   using environment " + runtimeLoader.getEnv());
+
       bus = new Bus();
       bus.register(this);
-      tracker = GoogleAnalyticsTracker.getInstance();
-      tracker.startNewSession(BaseActivity.ANALYTICS_ACCOUNT_ID, 20, this);
+
+      //this.objectGraph = ObjectGraph.create(new EmbiggenModule());
+      //this.objectGraph.inject(this);
+
+      prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
       cMgr = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -58,22 +71,38 @@ public class App extends Application {
             HTTPServerService service = localBinder.getService();             
              */
             bound = true;
-            Log.i(App.LOG_TAG, "service connected");
+            Log.i(App.TAG, "service connected");
          }
 
          @Override
-         public void onServiceDisconnected(ComponentName arg0) {
+         public void onServiceDisconnected(ComponentName comp) {
             // TODO make sure service.onDestroy cleans up sockets/etc
             bound = false;
-            Log.i(App.LOG_TAG, "service disconnected");
+            Log.i(App.TAG, "service disconnected");
          }
       };
       Intent intent = new Intent(this, HTTPServerService.class);
-      Log.i(App.LOG_TAG, "calling bind service");
+      Log.i(App.TAG, "calling bind service");
       bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
-      // TODO anymote      
+      // TODO anymote  
 
+      String gaId = runtimeLoader.getGoogleAnalyticsId();
+      if (gaId != null && !gaId.trim().equals("")) {
+         // NOTE intentionally NOT using analytics.xml resource because we must update settings at runtime (such as which id)
+         GoogleAnalytics ga = GoogleAnalytics.getInstance(getApplicationContext());
+         ///ga.setDebug(true);
+         gaTracker = ga.getTracker(gaId);
+         ga.setDefaultTracker(gaTracker);
+         GAServiceManager.getInstance().setDispatchPeriod(60);
+         gaTracker.setStartSession(true);
+      }
+
+   }
+
+   @Override
+   public void onLowMemory() {
+      super.onLowMemory();
    }
 
    // not guaranteed to be called
@@ -85,12 +114,11 @@ public class App extends Application {
          bound = false;
       }
 
-      tracker.stopSession();
       bus.unregister(this);
-   }
 
-   public GoogleAnalyticsTracker getTracker() {
-      return this.tracker;
+      if (gaTracker != null) {
+         gaTracker.close();
+      }
    }
 
    public SharedPreferences getPrefs() {
@@ -99,6 +127,22 @@ public class App extends Application {
 
    public String getInstallationId() {
       return Installation.id(this);
+   }
+
+   //
+   // ga
+   //
+
+   public void gaTrackView(String view) {
+      if (gaTracker != null) {
+         gaTracker.trackView(view);
+      }
+   }
+
+   public void gaTrackEvent(String category, String action, String label) {
+      if (gaTracker != null) {
+         gaTracker.trackEvent(category, action, label, null);
+      }
    }
 
    //

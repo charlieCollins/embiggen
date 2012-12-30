@@ -70,7 +70,7 @@ public class ImageAdapter extends BaseAdapter {
    }
 
    public View getView(int position, View convertView, ViewGroup parent) {
-      ///Log.d(App.LOG_TAG, "getView POSITION:" + position);
+      ///Log.d(App.TAG, "getView POSITION:" + position);
       
       ImageView view = null;
 
@@ -91,7 +91,7 @@ public class ImageAdapter extends BaseAdapter {
          view.setTag(mediaId);
          new LoadTask(mediaId, view, isPhoto).execute();
       } else {
-         Log.w(App.LOG_TAG, "getView imageId == -1, cannot populate");
+         Log.w(App.TAG, "getView imageId == -1, cannot populate");
       }
 
       return view;
@@ -125,10 +125,10 @@ public class ImageAdapter extends BaseAdapter {
       @Override
       protected void onPostExecute(Bitmap b) {
          
-         ///Log.d(App.LOG_TAG, "*** onPostExecute mediaId:" + mediaId);
+         ///Log.d(App.TAG, "*** onPostExecute mediaId:" + mediaId);
          
          if (b == null) {
-            ///Log.i(App.LOG_TAG, "ImageLoader onPostExecute bitmap NULL, largePreview set empty");
+            ///Log.i(App.TAG, "ImageLoader onPostExecute bitmap NULL, largePreview set empty");
             updateView.setImageDrawable(context.getResources().getDrawable(android.R.drawable.ic_menu_gallery));
             updateView.invalidate();
             return;
@@ -136,11 +136,11 @@ public class ImageAdapter extends BaseAdapter {
 
          if (!isCancelled()) {
             if ((Long) updateView.getTag() == mediaId) {
-               ///Log.d(App.LOG_TAG, "*** doing update for mediaId");
+               ///Log.d(App.TAG, "*** doing update for mediaId");
                ///updateView.setImageBitmap(ImageHelper.getRoundedCornerBitmap(b, 16));               
                updateView.setImageBitmap(b);               
             } else {
-               ///Log.d(App.LOG_TAG, "*** ignoring update for mediaId, tag does not match");
+               ///Log.d(App.TAG, "*** ignoring update for mediaId, tag does not match");
             }            
          } else {
             b.recycle();

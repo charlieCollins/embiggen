@@ -156,7 +156,7 @@ public class GalleryChooserVideos extends BaseActivity {
                   selectionArgs[1] = String.valueOf(endMonthStamp);
                } catch (ParseException e) {
                   // ignore, leave selection null
-                  Log.e(App.LOG_TAG, "Unable to parse selectedBucketName into date:" + selectedBucketName
+                  Log.e(App.TAG, "Unable to parse selectedBucketName into date:" + selectedBucketName
                            + " (no query will be used, all content returned)");
                }
             }
@@ -176,7 +176,7 @@ public class GalleryChooserVideos extends BaseActivity {
       if (cursor != null) {
          cursor.moveToFirst();
          ImageAdapter adapter = new ImageAdapter(this, cursor, false);
-         //Log.d(App.LOG_TAG, "ImageAdapter size = " + adapter.getCount());
+         //Log.d(App.TAG, "ImageAdapter size = " + adapter.getCount());
          if (adapter.getCount() == 0) {
             Toast.makeText(this, getString(R.string.message_no_content), Toast.LENGTH_LONG).show();
             finish();
@@ -218,7 +218,7 @@ public class GalleryChooserVideos extends BaseActivity {
       }
    }
 
-   protected String getActivityId() {
+   protected String getViewName() {
       return "GalleryChooserVideos";
    }
 
@@ -227,7 +227,7 @@ public class GalleryChooserVideos extends BaseActivity {
    //
 
    private void sendChoice(long imageId) {
-      Log.d(App.LOG_TAG, "sendChoice imageId:" + imageId);
+      Log.d(App.TAG, "sendChoice imageId:" + imageId);
 
       String filePath = getPath(imageId);
 
@@ -238,8 +238,8 @@ public class GalleryChooserVideos extends BaseActivity {
 
       String url = "http://" + app.getWifiIpAddress() + ":" + HTTPServerService.PORT + filePath;
 
-      Log.d(App.LOG_TAG, "sendChoice filePath:" + filePath);
-      Log.d(App.LOG_TAG, "sendChoice serving URL:" + url);
+      Log.d(App.TAG, "sendChoice filePath:" + filePath);
+      Log.d(App.TAG, "sendChoice serving URL:" + url);
       
       // TODO anymore send choice here
 
@@ -267,7 +267,7 @@ public class GalleryChooserVideos extends BaseActivity {
 
 
    private void sendVideoCommand(int command) {
-      //Log.i(App.LOG_TAG, "sendVideoCommand");
+      //Log.i(App.TAG, "sendVideoCommand");
       //MCData data = new MCData();      
       switch (command) {
          case PLAY:
@@ -304,27 +304,27 @@ public class GalleryChooserVideos extends BaseActivity {
          @Override
          public void run() {
             if (messageId.equals("onDisplayMedia")) {
-               //Log.i(App.LOG_TAG, "onDisplayMedia:" + messageData);
+               //Log.i(App.TAG, "onDisplayMedia:" + messageData);
                if (messageData.containsKey("result") && messageData.getInt("result") == 0) {
                   thumb.setImageDrawable(getResources().getDrawable(R.drawable.thumbs_up));
                   thumb.setVisibility(View.VISIBLE);
                   play.setEnabled(false);
                   pause.setEnabled(true);
                } else if (messageData.containsKey("result") && messageData.getInt("result") == 1) {
-                  Log.e(App.LOG_TAG, "ERROR display media failed (see data for reason)");
+                  Log.e(App.TAG, "ERROR display media failed (see data for reason)");
                   thumb.setImageDrawable(getResources().getDrawable(R.drawable.thumbs_down));
                   thumb.setVisibility(View.VISIBLE);                 
                   play.setEnabled(false);
                   pause.setEnabled(false);
                }
             } else  if (messageId.equals("onVideoStatus")) {
-               //Log.i(App.LOG_TAG, "onVideoStatus:" + messageData);               
+               //Log.i(App.TAG, "onVideoStatus:" + messageData);               
                
                int state = -1;
                if (messageData.containsKey("state")) {
                   state = messageData.getInt("state");                  
                }
-               ///Log.d(App.LOG_TAG, "*** processing state:" + state);
+               ///Log.d(App.TAG, "*** processing state:" + state);
                switch (state) {
                   case NASCENT:
                      break;
@@ -411,7 +411,7 @@ public class GalleryChooserVideos extends BaseActivity {
 
             return false;
          } catch (Exception e) {
-            Log.e(App.LOG_TAG, "ERROR processing swipe:" + e.getMessage(), e);
+            Log.e(App.TAG, "ERROR processing swipe:" + e.getMessage(), e);
             return false;
          }
       }

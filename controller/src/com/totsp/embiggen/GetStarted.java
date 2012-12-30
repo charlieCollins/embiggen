@@ -64,7 +64,7 @@ public class GetStarted extends BaseActivity {
       }
    }
    
-   protected String getActivityId() {
+   protected String getViewName() {
       return "GetStarted";
    }
 

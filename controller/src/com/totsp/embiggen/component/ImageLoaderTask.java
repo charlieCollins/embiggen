@@ -36,7 +36,7 @@ public class ImageLoaderTask extends AsyncTask<Uri, Void, Bitmap> {
       if (isCancelled()) {
          return null;
       }
-      ///Log.d(App.LOG_TAG, "ImageLoader doInBackground uri:" + args[0]);
+      ///Log.d(App.TAG, "ImageLoader doInBackground uri:" + args[0]);
       Bitmap bitmap = loadBitmap(args[0], opts);
       return bitmap;
    }
@@ -44,7 +44,7 @@ public class ImageLoaderTask extends AsyncTask<Uri, Void, Bitmap> {
    @Override
    protected void onPostExecute(Bitmap b) {
       if (b == null) {
-         ///Log.i(App.LOG_TAG, "ImageLoader onPostExecute bitmap NULL, largePreview set empty");
+         ///Log.i(App.TAG, "ImageLoader onPostExecute bitmap NULL, largePreview set empty");
          modifyView.setImageDrawable(context.getResources().getDrawable(android.R.drawable.ic_menu_gallery));
          modifyView.invalidate();
          return;
@@ -69,7 +69,7 @@ public class ImageLoaderTask extends AsyncTask<Uri, Void, Bitmap> {
    }
 
    private Bitmap loadBitmap(Uri uri, BitmapFactory.Options opts) {
-      ///Log.d(App.LOG_TAG, "loadBitmap uri:" + uri);
+      ///Log.d(App.TAG, "loadBitmap uri:" + uri);
       Bitmap bitmap = null;
       try {
          if (isPhoto) {
@@ -81,9 +81,9 @@ public class ImageLoaderTask extends AsyncTask<Uri, Void, Bitmap> {
                               Long.valueOf(uri.getLastPathSegment()), MediaStore.Video.Thumbnails.MICRO_KIND, null);
          }
       } catch (OutOfMemoryError e) {
-         Log.e(App.LOG_TAG, "OOME trying to loadBitmap in ImageLoaderTask:" + e.getMessage());
+         Log.e(App.TAG, "OOME trying to loadBitmap in ImageLoaderTask:" + e.getMessage());
       } catch (RuntimeException e) {
-         Log.e(App.LOG_TAG, "RTE trying to loadBitmap in ImageLoaderTask:" + e.getMessage());
+         Log.e(App.TAG, "RTE trying to loadBitmap in ImageLoaderTask:" + e.getMessage());
       }
       return bitmap;
    }
@@ -110,7 +110,7 @@ public class ImageLoaderTask extends AsyncTask<Uri, Void, Bitmap> {
           b = BitmapFactory.decodeStream(is, null, opts);
           is.close();
       } catch (IOException e) {
-         Log.e(App.LOG_TAG, "IOE trying to decodeStream in ImageLoaderTask:" + e.getMessage());
+         Log.e(App.TAG, "IOE trying to decodeStream in ImageLoaderTask:" + e.getMessage());
       }
       return b;
   }

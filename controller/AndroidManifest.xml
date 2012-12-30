@@ -10,52 +10,55 @@
 
     <!-- can't use vid thumbnails stuff in less than 5 -->
     <!-- can't support 3GP videos and older audio codecs in less than 7 -->
-    <uses-sdk android:minSdkVersion="7" />
+    <uses-sdk android:minSdkVersion="8" />
 
     <uses-feature android:name="android.hardware.wifi" />
     <uses-feature android:name="android.hardware.touchscreen" />
 
-    <supports-screens
-        android:largeScreens="true"
-        android:normalScreens="true"
-        android:smallScreens="true" />
-
     <application
-        android:name=".App"  
-        android:icon="@drawable/icon"      
-        android:label="Embiggen" >
-        
-         <service android:name="com.totsp.server.HTTPServerService" />
-        
+        android:name=".App"
+        android:icon="@drawable/icon"
+        android:label="Embiggen"
+        android:theme="@style/embiggen_theme" >
+        <service android:name="com.totsp.server.HTTPServerService" />
+
         <activity
             android:name=".GetStarted"
-            android:screenOrientation="portrait" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sherlock.Light" >
         </activity>
         <activity
             android:name=".Login"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" />
+            android:theme="@style/Theme.Sherlock.Light"
+            android:windowSoftInputMode="adjustResize" >
+            <intent-filter>
+                <!-- temp start here -->
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".Preferences"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sherlock.Light"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".LaunchChooser"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sherlock.Light" />
         <activity
             android:name=".GalleryChooserPhotos"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sherlock.Light" />
         <activity
             android:name=".GalleryChooserVideos"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sherlock.Light" />
         <activity
             android:name=".BucketList"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Sherlock.Light" />
     </application>
 
 </manifest>

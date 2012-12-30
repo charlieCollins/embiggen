@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -17,8 +18,8 @@ import android.widget.VideoView;
 import android.widget.ViewSwitcher;
 
 import com.google.common.base.Optional;
-import com.totsp.embiggen.host.eventbus.BackgroundThreadEventBus;
-import com.totsp.embiggen.host.eventbus.EventBusStation;
+import com.totsp.android.util.NetworkUtil;
+import com.totsp.embiggen.host.messageserver.MessageServer;
 import com.totsp.embiggen.host.util.ImageUtil;
 
 /**
@@ -28,8 +29,6 @@ import com.totsp.embiggen.host.util.ImageUtil;
  */
 final public class MainActivity extends BaseActivity {
 
-   private BackgroundThreadEventBus backgroundThread;
-   
    private ImageUtil imageUtil;
 
    private ViewSwitcher switcher;
@@ -40,11 +39,9 @@ final public class MainActivity extends BaseActivity {
    private BroadcastReceiver networkStateReceiver;
    private Optional<Boolean> haveNetwork = Optional.absent(); // we have no idea until we look.
 
-   @Override
-   protected String getActivityId() {
-      return "Room";
-   }
-
+   // TODO MessageServer here is temp for quick test, will be in service
+   private MessageServer messageServer;
+   
    //
    // standard android lifecycle methods
    //
@@ -54,11 +51,8 @@ final public class MainActivity extends BaseActivity {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.room);
 
-      backgroundThread = EventBusStation.backgroundThread();
-      backgroundThread.register(this);
-      
       imageUtil = new ImageUtil(getApplicationContext());
-      
+
       switcher = (ViewSwitcher) findViewById(R.id.switcher);
       shareLayout = (RelativeLayout) findViewById(R.id.share_layout);
       shareImageView = (ImageView) findViewById(R.id.share_image_view);
@@ -92,6 +86,48 @@ final public class MainActivity extends BaseActivity {
             });
          }
       };
+      
+      
+      // TEMPORARY, just start MessageServer and test it
+      WifiManager wifiMgr = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+      String wifiIpAddress = NetworkUtil.getWifiIpAddress(wifiMgr);
+      messageServer = new MessageServer(wifiIpAddress);
+      messageServer.start(MessageServer.DEFAULT_SERVER_PORT);
+   }
+   
+   @Override
+   protected synchronized void onStart() {
+      super.onStart();
+      Log.i(MainActivity.class.getSimpleName(), "in onStart(); haveNetwork is " + haveNetwork);
+      IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+      registerReceiver(networkStateReceiver, filter);
+   }
+   
+   @Override
+   protected void onPause() {
+      super.onPause();
+   }
+
+   @Override
+   protected void onStop() {
+      transitionToDisconnected();
+
+      unregisterReceiver(networkStateReceiver);
+      haveNetwork = Optional.absent();
+      
+      messageServer.stop();
+      
+      super.onStop();
+   }
+
+   @Override
+   protected void onDestroy() {
+      super.onDestroy();
+   }   
+
+   @Override
+   protected String getViewName() {
+      return "HostMain";
    }
 
    @Override
@@ -141,13 +177,7 @@ final public class MainActivity extends BaseActivity {
       */
    }
 
-   @Override
-   protected synchronized void onStart() {
-      super.onStart();
-      Log.i(MainActivity.class.getSimpleName(), "in onStart(); haveNetwork is " + haveNetwork);
-      IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-      registerReceiver(networkStateReceiver, filter);
-   }
+   
 
    /*
    @Override
@@ -167,46 +197,15 @@ final public class MainActivity extends BaseActivity {
          }
       });
    }
-   */
+   */   
 
-   @Override
-   protected void onPause() {
-      super.onPause();
-   }
-
-   @Override
-   protected void onStop() {
-      transitionToDisconnected();
-      backgroundThread.submit(new Runnable() {
-         public void run() {
-            /*
-            if (app.getClient().isConnected()) {
-               Log.i(RoomActivity.class.getSimpleName(), "leaving room...");
-               app.getClient().leaveRoom();
-            }
-            */
-         }
-      });
-      unregisterReceiver(networkStateReceiver);
-      haveNetwork = Optional.absent();
-      super.onStop();
-   }
-
-   @Override
-   protected void onDestroy() {
-      backgroundThread.unregister(this);
-      super.onDestroy();
-   }
-
-   //
-   // MOVL messaging and bus
-   //
 
    // declare and register messages we expect to receive from other Connect clients
    // (this is the apps message "protocol" in terms of ids)
-   final public static class DisplayMedia  {
+   final public static class DisplayMedia {
    }
-   final public static class SkipMedia  {
+
+   final public static class SkipMedia {
    }
 
    /*
@@ -235,7 +234,7 @@ final public class MainActivity extends BaseActivity {
          MCData data = msg.getMessageData();
          final String type = data.getString("type");
          final String url = data.getString("url");
-         Log.d(App.LOG_TAG, "displayMedia type:" + type + " url:" + url);         
+         Log.d(App.TAG, "displayMedia type:" + type + " url:" + url);         
          
          // photo
          if (type.equalsIgnoreCase("photo")) {

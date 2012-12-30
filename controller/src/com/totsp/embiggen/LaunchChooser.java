@@ -48,7 +48,7 @@ public class LaunchChooser extends BaseActivity {
       });
    }
    
-   protected String getActivityId() {
+   protected String getViewName() {
       return "LaunchChooser";
    }
 

@@ -12,6 +12,8 @@ import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.totsp.embiggen.util.MessageClient;
+
 public class Login extends BaseActivity {
 
    // require wifi or not, emulator does not support wifi, so set to true to use in emul
@@ -20,11 +22,13 @@ public class Login extends BaseActivity {
    private EditText code;
    private Button loginJoin;
 
+   private MessageClient messageClient;
+
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.login);
- 
+
       code = (EditText) findViewById(R.id.login_code);
       loginJoin = (Button) findViewById(R.id.login_join);
 
@@ -46,8 +50,21 @@ public class Login extends BaseActivity {
             return false;
          }
       });
-      
-      testMode = app.getPrefs().getBoolean("testMode", false);      
+
+      testMode = app.getPrefs().getBoolean("testMode", false);
+
+   }
+
+   @Override
+   protected void onStart() {
+      messageClient = new MessageClient();
+      super.onStart();
+   }
+
+   @Override
+   protected void onStop() {
+      messageClient.terminateClient();
+      super.onStop();
    }
 
    @Override
@@ -56,7 +73,7 @@ public class Login extends BaseActivity {
 
       // determine if WiFi is enabled or not, if not prompt user to enable it  
       boolean wifiEnabled = false;
-      if (!app.wifiConnectionPresent() && !testMode) {       
+      if (!app.wifiConnectionPresent() && !testMode) {
          AlertDialog.Builder builder = new AlertDialog.Builder(this);
          builder.setTitle("WiFi is not enabled").setMessage("Go to settings and enable WiFi (or retry)?")
                   .setCancelable(true).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -85,30 +102,30 @@ public class Login extends BaseActivity {
       } else {
          wifiEnabled = true;
       }
-      
+
       // determine if external storage is available
       boolean extStorageEnabled = true;
       // TODO check for ext storage avail, or not?
       // we use EXTERNAL_CONTENT_URI, so presumably ext storage must be avail?
       /*
       boolean mExternalStorageAvailable = false;
-boolean mExternalStorageWriteable = false;
-String state = Environment.getExternalStorageState();
+      boolean mExternalStorageWriteable = false;
+      String state = Environment.getExternalStorageState();
 
-if (Environment.MEDIA_MOUNTED.equals(state)) {
-    // We can read and write the media
-    mExternalStorageAvailable = mExternalStorageWriteable = true;
-} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-    // We can only read the media
-    mExternalStorageAvailable = true;
-    mExternalStorageWriteable = false;
-} else {
-    // Something else is wrong. It may be one of many other states, but all we need
-    //  to know is we can neither read nor write
-    mExternalStorageAvailable = mExternalStorageWriteable = false;
-}       
+      if (Environment.MEDIA_MOUNTED.equals(state)) {
+      // We can read and write the media
+      mExternalStorageAvailable = mExternalStorageWriteable = true;
+      } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+      // We can only read the media
+      mExternalStorageAvailable = true;
+      mExternalStorageWriteable = false;
+      } else {
+      // Something else is wrong. It may be one of many other states, but all we need
+      //  to know is we can neither read nor write
+      mExternalStorageAvailable = mExternalStorageWriteable = false;
+      }       
        */
-      
+
       if (wifiEnabled && extStorageEnabled) {
          loginJoin.setEnabled(true);
       } else {
@@ -116,13 +133,13 @@ if (Environment.MEDIA_MOUNTED.equals(state)) {
       }
    }
 
-   protected String getActivityId() {
+   protected String getViewName() {
       return "Login";
    }
 
    private void advance() {
       if (code.getText().toString().trim() != null && code.getText().toString().trim().length() == 5) {
-         //Log.d(App.LOG_TAG, "JOINING ROOM");
+         //Log.d(App.TAG, "JOINING ROOM");
          dialog.setMessage("Joining...");
          dialog.show();
          // was joinRoomAsController
@@ -167,7 +184,7 @@ if (Environment.MEDIA_MOUNTED.equals(state)) {
                dialog.dismiss();
 
                String message = res.getMessage();
-               Log.e(App.LOG_TAG, "ERROR connecting:" + message);
+               Log.e(App.TAG, "ERROR connecting:" + message);
 
                if (message.contains("cannot locate room")) {
                   Toast.makeText(

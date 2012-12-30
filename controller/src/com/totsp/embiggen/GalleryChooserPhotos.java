@@ -95,7 +95,7 @@ public class GalleryChooserPhotos extends BaseActivity {
                v.setBackgroundDrawable(borderOn);
 
                Uri uri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, String.valueOf(id));
-               Log.v(App.LOG_TAG, "onItemSelected uri:" + uri);
+               Log.v(App.TAG, "onItemSelected uri:" + uri);
                loader = (ImageLoaderTask) new ImageLoaderTask(largePreview, getApplicationContext(), true).execute(uri);
             }
          }
@@ -110,8 +110,8 @@ public class GalleryChooserPhotos extends BaseActivity {
       String selectedBucketName = getIntent().getStringExtra(BucketList.BUCKET_NAME);
       String projectionColumn = getIntent().getStringExtra(BucketList.BUCKET_SORT_BY);
 
-      //Log.d(App.LOG_TAG, "using projectionColumn:" + projectionColumn);
-      //Log.d(App.LOG_TAG, "using selectedBucketName:" + selectedBucketName);
+      //Log.d(App.TAG, "using projectionColumn:" + projectionColumn);
+      //Log.d(App.TAG, "using selectedBucketName:" + selectedBucketName);
 
       String selection = null;
       String[] selectionArgs = null;
@@ -138,7 +138,7 @@ public class GalleryChooserPhotos extends BaseActivity {
                   selectionArgs[1] = String.valueOf(endMonthStamp);
                } catch (ParseException e) {
                   // ignore, leave selection null
-                  Log.e(App.LOG_TAG, "Unable to parse selectedBucketName into date:" + selectedBucketName
+                  Log.e(App.TAG, "Unable to parse selectedBucketName into date:" + selectedBucketName
                            + " (no query will be used, all content returned)");
                }
             }
@@ -198,7 +198,7 @@ public class GalleryChooserPhotos extends BaseActivity {
       }
    }
 
-   protected String getActivityId() {
+   protected String getViewName() {
       return "GalleryChooserPhotos";
    }
 
@@ -207,7 +207,7 @@ public class GalleryChooserPhotos extends BaseActivity {
    //
 
    private void sendChoice(long imageId) {
-      Log.d(App.LOG_TAG, "sendChoice imageId:" + imageId);
+      Log.d(App.TAG, "sendChoice imageId:" + imageId);
 
       String filePath = getPath(imageId);
 
@@ -218,8 +218,8 @@ public class GalleryChooserPhotos extends BaseActivity {
 
       String url = "http://" + app.getWifiIpAddress() + ":" + HTTPServerService.PORT + filePath;
 
-      Log.d(App.LOG_TAG, "sendChoice filePath:" + filePath);
-      Log.d(App.LOG_TAG, "sendChoice serving URL:" + url);
+      Log.d(App.TAG, "sendChoice filePath:" + filePath);
+      Log.d(App.TAG, "sendChoice serving URL:" + url);
       
       // TODO anymore send choice here
 
@@ -255,12 +255,12 @@ public class GalleryChooserPhotos extends BaseActivity {
             @Override
             public void run() {
                if (messageId.equals("onDisplayMedia")) {
-                  //Log.i(App.LOG_TAG, "onDisplayMedia:" + messageData);
+                  //Log.i(App.TAG, "onDisplayMedia:" + messageData);
                   if (messageData.containsKey("result") && messageData.getInt("result") == 0) {
                      thumb.setImageDrawable(getResources().getDrawable(R.drawable.thumbs_up));
                      thumb.setVisibility(View.VISIBLE);
                   } else {
-                     Log.e(App.LOG_TAG, "ERROR display media failed (see data for reason)");
+                     Log.e(App.TAG, "ERROR display media failed (see data for reason)");
                      thumb.setImageDrawable(getResources().getDrawable(R.drawable.thumbs_down));
                      thumb.setVisibility(View.VISIBLE);
                   }
@@ -321,7 +321,7 @@ public class GalleryChooserPhotos extends BaseActivity {
 
             return false;
          } catch (Exception e) {
-            Log.e(App.LOG_TAG, "ERROR processing swipe:" + e.getMessage(), e);
+            Log.e(App.TAG, "ERROR processing swipe:" + e.getMessage(), e);
             return false;
          }
       }

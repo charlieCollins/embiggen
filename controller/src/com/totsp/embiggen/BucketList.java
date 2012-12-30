@@ -180,7 +180,7 @@ public class BucketList extends BaseActivity {
       super.onDestroy();
    }
 
-   protected String getActivityId() {
+   protected String getViewName() {
       return "AlbumList";
    }
 

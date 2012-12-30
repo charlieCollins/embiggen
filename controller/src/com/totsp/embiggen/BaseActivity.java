@@ -3,7 +3,6 @@ package com.totsp.embiggen;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -23,30 +22,30 @@ public abstract class BaseActivity extends SherlockActivity {
    public static final String DO_NOT_TRACK_ACTIVITY_ID = "DO_NOT_TRACK";
 
    // TODO ActionBar via ActionBarSherlock (get rid of this menu crap)
-   
+
    //private static final int OPTIONS_MENU_LOGOUT = 0;
    //private static final int OPTIONS_MENU_HELP = 1;
    //private static final int OPTIONS_MENU_PREFS = 2;
-   
+
    protected App app;
 
    protected InputMethodManager imm;
    protected ProgressDialog dialog;
    protected Dialog helpDialog;
-   
+
    protected Handler handler;
-   
+
    protected ActionBar actionBar;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      
+
       //requestWindowFeature(Window.FEATURE_NO_TITLE);
-      
+
       app = (App) this.getApplication();
-      
-      actionBar = this.getSupportActionBar(); 
+
+      actionBar = this.getSupportActionBar();
       actionBar.setDisplayHomeAsUpEnabled(false);
       actionBar.setDisplayShowTitleEnabled(true);
       actionBar.setDisplayUseLogoEnabled(false);
@@ -56,7 +55,7 @@ public abstract class BaseActivity extends SherlockActivity {
       dialog = new ProgressDialog(this);
       dialog.setCancelable(false);
       dialog.setMessage("");
-      
+
       LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
       helpDialog = new Dialog(this);
       helpDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -65,30 +64,27 @@ public abstract class BaseActivity extends SherlockActivity {
       Button roomNotFoundOk = (Button) helpLayout.findViewById(R.id.dialog_help_done);
       roomNotFoundOk.setOnClickListener(new OnClickListener() {
          @Override
-         public void onClick(View v) { 
+         public void onClick(View v) {
             if (helpDialog.isShowing()) {
                helpDialog.dismiss();
             }
-         }         
+         }
       });
 
-      imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);      
-   }  
+      imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+   }
 
    @Override
-   protected void onStart() {      
-      super.onStart();      
+   protected void onStart() {
+      super.onStart();
+
+      // ga
+      app.gaTrackView(getViewName());
    }
 
    @Override
    protected void onResume() {
       super.onResume();
-
-      String activityId = getActivityId();
-      if ((activityId != null) && !activityId.equals("") && !activityId.equals(DO_NOT_TRACK_ACTIVITY_ID)) {
-         ///tracker.trackPageView("/" + getActivityId());
-         new TrackPageViewTask().execute(getActivityId());
-      }
 
       // this somehow interferes with android:windowSoftInputMode="adjustResize"
       ///getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -101,7 +97,7 @@ public abstract class BaseActivity extends SherlockActivity {
       if (!app.getClient().isConnected()
                && (!(this.getClass().getSimpleName().equals("GetStarted") || this.getClass().getSimpleName()
                         .equals("Login")))) {
-         Log.e(App.LOG_TAG, "ERROR, not connected, go to get started");
+         Log.e(App.TAG, "ERROR, not connected, go to get started");
          Intent i = new Intent(this, GetStarted.class);
 
          startActivity(i);
@@ -111,14 +107,15 @@ public abstract class BaseActivity extends SherlockActivity {
       if (app.getClient().isConnected()
                && (this.getClass().getSimpleName().equals("GetStarted") || this.getClass().getSimpleName()
                         .equals("Login"))) {
-         Log.i(App.LOG_TAG, "Forward to LaunchChooser (we're logged in (use menu to log out))");
+         Log.i(App.TAG, "Forward to LaunchChooser (we're logged in (use menu to log out))");
          startActivity(new Intent(this, LaunchChooser.class));
       }
       */
       ///
    }
 
-   protected abstract String getActivityId();
+   // used for google analytics
+   protected abstract String getViewName();
 
    @Override
    protected void onPause() {
@@ -164,26 +161,5 @@ public abstract class BaseActivity extends SherlockActivity {
       return false;
    }
    */
-
-   class TrackPageViewTask extends AsyncTask<String, Void, Void> {
-
-      public TrackPageViewTask() {
-      }
-
-      @Override
-      protected Void doInBackground(String... args) {
-         // TODO
-         //app.getTracker().trackPageView("/" + args[0]);
-         return null;
-      }
-
-      @Override
-      protected void onPostExecute(Void v) {
-      }
-   }
-
-   
-
-   
 
 }

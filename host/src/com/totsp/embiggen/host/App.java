@@ -10,17 +10,14 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
 
-import com.google.android.apps.analytics.GoogleAnalyticsTracker;
 import com.totsp.android.util.Installation;
 
-public class App extends Application  {
+public class App extends Application {
 
-   public static final String LOG_TAG = "Embiggen-Host";
+   public static final String TAG = "Embiggen-Host";
 
    private ConnectivityManager cMgr;
    private SharedPreferences prefs;
-   
-   protected GoogleAnalyticsTracker tracker;
 
    // prevent error on Android emul
    static {
@@ -35,9 +32,6 @@ public class App extends Application  {
       cMgr = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
       prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-      // Google Analytics
-      tracker = GoogleAnalyticsTracker.getInstance();
-      tracker.startNewSession(BaseActivity.ANALYTICS_ACCOUNT_ID, 20, this);    
    }
 
    // not guaranteed to be called, but plays nice most of the time
@@ -45,16 +39,12 @@ public class App extends Application  {
    public void onTerminate() {
       super.onTerminate();
 
-
       ///tracker.stopSession();
    }
 
    //
    // accessors for activities
    //
-   public GoogleAnalyticsTracker getTracker() {
-      return this.tracker;
-   }  
 
    public SharedPreferences getPrefs() {
       return this.prefs;
@@ -62,7 +52,7 @@ public class App extends Application  {
 
    public String getInstallationId() {
       return Installation.id(this);
-   }   
+   }
 
    //
    // util/helpers for app

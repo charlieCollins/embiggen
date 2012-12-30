@@ -54,7 +54,7 @@ public final class ImageUtil {
          HttpResponse response = client.execute(getRequest);
          final int statusCode = response.getStatusLine().getStatusCode();
          if (statusCode != HttpStatus.SC_OK) {
-            Log.w(App.LOG_TAG, "Error " + statusCode + " while retrieving bitmap from " + urlString);
+            Log.w(App.TAG, "Error " + statusCode + " while retrieving bitmap from " + urlString);
          }
 
          final HttpEntity entity = response.getEntity();
@@ -76,7 +76,7 @@ public final class ImageUtil {
          }
       } catch (Exception e) {
          getRequest.abort();
-         Log.w(App.LOG_TAG, "Error while retrieving bitmap from " + urlString, e);
+         Log.w(App.TAG, "Error while retrieving bitmap from " + urlString, e);
       } finally {
          if (client != null) {
             client.close();
