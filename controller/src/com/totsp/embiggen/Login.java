@@ -1,8 +1,10 @@
 package com.totsp.embiggen;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.KeyEvent;
@@ -11,6 +13,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
+
+import com.totsp.android.util.NetworkUtil;
 
 public class Login extends BaseActivity {
 
@@ -69,7 +73,8 @@ public class Login extends BaseActivity {
 
       // determine if WiFi is enabled or not, if not prompt user to enable it  
       boolean wifiEnabled = false;
-      if (!app.wifiConnectionPresent() && !testMode) {
+      if (!NetworkUtil.wifiConnectionPresent((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE))
+               && !testMode) {
          AlertDialog.Builder builder = new AlertDialog.Builder(this);
          builder.setTitle("WiFi is not enabled").setMessage("Go to settings and enable WiFi (or retry)?")
                   .setCancelable(true).setPositiveButton("Yes", new DialogInterface.OnClickListener() {

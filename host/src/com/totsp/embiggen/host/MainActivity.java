@@ -17,7 +17,6 @@ import android.widget.VideoView;
 import android.widget.ViewSwitcher;
 
 import com.google.common.base.Optional;
-import com.totsp.embiggen.host.messageserver.MessageServer;
 import com.totsp.embiggen.host.util.ImageUtil;
 
 /**
@@ -36,9 +35,6 @@ final public class MainActivity extends BaseActivity {
 
    private BroadcastReceiver networkStateReceiver;
    private Optional<Boolean> haveNetwork = Optional.absent(); // we have no idea until we look.
-
-   // TODO MessageServer here is temp for quick test, will be in service
-   private MessageServer messageServer;
 
    //
    // standard android lifecycle methods
@@ -83,7 +79,7 @@ final public class MainActivity extends BaseActivity {
                }
             });
          }
-      };      
+      };
    }
 
    @Override
@@ -92,10 +88,6 @@ final public class MainActivity extends BaseActivity {
       Log.i(MainActivity.class.getSimpleName(), "in onStart(); haveNetwork is " + haveNetwork);
       IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
       registerReceiver(networkStateReceiver, filter);
-      
-      // TEMPORARY, just start MessageServer and test it (will be service)     
-      messageServer = new MessageServer(this);
-      messageServer.start(MessageServer.DEFAULT_SERVER_PORT);
    }
 
    @Override
@@ -109,8 +101,6 @@ final public class MainActivity extends BaseActivity {
 
       unregisterReceiver(networkStateReceiver);
       haveNetwork = Optional.absent();
-
-      messageServer.stop();
 
       super.onStop();
    }

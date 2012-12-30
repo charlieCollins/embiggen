@@ -7,10 +7,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.NetworkInfo.State;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -170,32 +166,5 @@ public class App extends Application {
       if (gaTracker != null) {
          gaTracker.trackEvent(category, action, label, null);
       }
-   }
-
-   //
-   // util/helpers for app
-   //   
-   public boolean connectionPresent() {
-      NetworkInfo netInfo = cMgr.getActiveNetworkInfo();
-      if ((netInfo != null) && (netInfo.getState() != null)) {
-         return netInfo.getState().equals(State.CONNECTED);
-      }
-      return false;
-   }
-
-   public boolean wifiConnectionPresent() {
-      NetworkInfo netInfo = cMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-      return netInfo.isConnectedOrConnecting();
-   }
-
-   public String getWifiIpAddress() {
-      if (wifiConnectionPresent()) {
-         WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-         int ipAddress = wifiInfo.getIpAddress();
-         return String.format("%d.%d.%d.%d", (ipAddress & 0xff), (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff),
-                  (ipAddress >> 24 & 0xff));
-      }
-      return null;
    }
 }

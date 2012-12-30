@@ -1,8 +1,10 @@
 package com.totsp.embiggen;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
@@ -23,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.totsp.android.util.NetworkUtil;
 import com.totsp.embiggen.component.ImageAdapter;
 import com.totsp.embiggen.component.ImageLoaderTask;
 import com.totsp.server.HTTPServerService;
@@ -236,7 +239,9 @@ public class GalleryChooserVideos extends BaseActivity {
          filePath = filePath.replace(" ", "+");
       }
 
-      String url = "http://" + app.getWifiIpAddress() + ":" + HTTPServerService.PORT + filePath;
+      String wifiIpAddress = NetworkUtil.getWifiIpAddress((WifiManager) getSystemService(Context.WIFI_SERVICE));
+      
+      String url = "http://" + wifiIpAddress + ":" + HTTPServerService.PORT + filePath;
 
       Log.d(App.TAG, "sendChoice filePath:" + filePath);
       Log.d(App.TAG, "sendChoice serving URL:" + url);

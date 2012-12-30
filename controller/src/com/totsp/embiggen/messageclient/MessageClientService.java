@@ -13,6 +13,9 @@ import com.totsp.embiggen.App;
 
 public class MessageClientService extends Service {
 
+   // TODO add methods here so callers can send outgoing messages via the client (through this service)
+   // TODO post any incoming messages here to the Bus (so clients don't have to hang off listeners and shit)
+   
    private Looper backLooper; // background looper, only used here internally
 
    // TODO private final Bus bus;   
@@ -41,13 +44,12 @@ public class MessageClientService extends Service {
       thread.start();
       backLooper = thread.getLooper();
 
-      System.out.println("**** MessageClientService ON CREATE");
+      Log.d(App.TAG, "MessageClientService ON CREATE");
       
       // run off of main/UI Thread (service uses same thread as other components by default)
       runOnBackThread(new Runnable() {
          @Override
          public void run() {
-            System.out.println("**** MessageClientService create client and call start");
             client = new MessageClient(MessageClientService.this);
             client.start();
          }

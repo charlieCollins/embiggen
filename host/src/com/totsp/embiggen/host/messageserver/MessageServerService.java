@@ -3,11 +3,19 @@ package com.totsp.embiggen.host.messageserver;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
+
+import java.util.Random;
 
 public class MessageServerService extends Service {
 
-   public static final int PORT = 8998;
+   // TODO add methods here so callers can send outgoing messages via the server (through this service)
+   // TODO post any incoming messages here to the Bus (so clients don't have to hang off listeners and shit)
+   
+   private Looper backLooper; // background looper, only used here internally
 
    private MessageServer server;
 
@@ -28,30 +36,40 @@ public class MessageServerService extends Service {
    @Override
    public void onCreate() {
       super.onCreate();
+      
+      HandlerThread thread = new HandlerThread("BackLooper", Thread.NORM_PRIORITY);
+      thread.start();
+      backLooper = thread.getLooper();
+
+      // 8378 is the FIXED broadcast port, so range regular socket server 8379-8399
+      // TODO check if ports selected are in use on same device/LAN (right now just assumes they aren't)
+      Random rand = new Random();
+      final int port = rand.nextInt(8399 - 8378 + 1) + 8378;
+      
+      System.out.println("MessageServerService ON CREATE, random port:" + port);
+      
       // run off of main/UI Thread (service uses same thread as other components by default)
-      new Thread() {
+      runOnBackThread(new Runnable() {
          @Override
          public void run() {
-            server = new MessageServer(null);
-            try {
-               server.start(PORT);
-               //Log.i(Constants.LOG_TAG, "HTTP SERVER STARTED, LISTENING ON PORT:" + PORT);
-            } catch (Exception e) {
-               //Log.e(Constants.LOG_TAG, "ERROR can't start HTTP server", e);
-            }
+            server = new MessageServer(MessageServerService.this);
+            server.start(port);
          }
-      }.start();
+      });
    }
 
    @Override
    public void onDestroy() {
       super.onDestroy();
-      try {
-         server.stop();
-         //Log.i(Constants.LOG_TAG, "HTTP SERVER STOPPED");
-      } catch (Exception e) {
-         //Log.e(Constants.LOG_TAG, "ERROR can't stop HTTP server", e);
-      }
+      
+      runOnBackThread(new Runnable() {
+         @Override
+         public void run() {
+            if (server != null) {
+               server.stop();
+            }
+         }
+      });
    }
 
    @Override
@@ -64,5 +82,13 @@ public class MessageServerService extends Service {
    public boolean onUnbind(Intent intent) {
       //Log.d(Constants.LOG_TAG, "MessageServerService UN-BOUND");
       return super.onUnbind(intent);
+   }
+   
+   private synchronized void runOnBackThread(Runnable r) {
+      new Handler(backLooper).post(r);
+   }
+
+   private synchronized void runOnMainThread(Runnable r) {
+      new Handler(this.getMainLooper()).post(r);
    }
 }
