@@ -1,4 +1,4 @@
-package com.totsp.embiggen.util;
+package com.totsp.embiggen.messageclient;
 
 import android.content.Context;
 import android.net.DhcpInfo;
@@ -77,18 +77,34 @@ public class MessageClient {
 
          byte[] buffer = new byte[1024];
          DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-         while (true) {
+         while (true) {            
             broadcastSocket.receive(packet);
             // we don't care about encoding/etc for this?
             String data = new String(buffer, 0, packet.getLength());
             Log.i(App.TAG, "CLIENT got packet " + data);
+            processBroadcastData(data);            
          }
       } catch (Exception e) {
-         Log.e(App.TAG, "Error initializing broadcast client", e);
+         Log.e(App.TAG, "Broadcast socket error (expected after socket is closed intentionally):" + e.getMessage());
+      }
+   }
+   
+   private void processBroadcastData(String data) {
+      if (data != null && data.length() > 0) {
+         String hostPort = data.substring(data.indexOf("~") + 1, data.length());         
+         String hostString = hostPort.substring(0, hostPort.indexOf(":"));
+         String portString = hostPort.substring(hostPort.indexOf(":") + 1, hostPort.length());         
+         Log.e(App.TAG, "Got host:port from broadcast (stop broadcast socket), host:" + hostString + " port:" + portString);
+         
+         // kill the broadcast client and start the regular message client
+         terminateBroadcastClient();
+         
+         // TODO regular messaging stuff         
       }
    }
 
    private void terminateBroadcastClient() {
+      Log.d(App.TAG, "terminateBroadcastClient");
       if (broadcastSocket != null && broadcastSocket.isBound()) {
          broadcastSocket.close();
       }

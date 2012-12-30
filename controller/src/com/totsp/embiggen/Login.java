@@ -12,8 +12,6 @@ import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.totsp.embiggen.util.MessageClient;
-
 public class Login extends BaseActivity {
 
    // require wifi or not, emulator does not support wifi, so set to true to use in emul
@@ -21,8 +19,6 @@ public class Login extends BaseActivity {
 
    private EditText code;
    private Button loginJoin;
-
-   private MessageClient messageClient;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -57,16 +53,13 @@ public class Login extends BaseActivity {
 
    @Override
    protected void onStart() {
-      messageClient = new MessageClient(this);
-      messageClient.start();
-      
+
       super.onStart();
    }
 
    @Override
    protected void onStop() {
-      messageClient.stop();
-      
+
       super.onStop();
    }
 
