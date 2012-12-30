@@ -32,7 +32,7 @@ public class MessageServerService extends Service {
       new Thread() {
          @Override
          public void run() {
-            server = new MessageServer("foobar");
+            server = new MessageServer(null);
             try {
                server.start(PORT);
                //Log.i(Constants.LOG_TAG, "HTTP SERVER STARTED, LISTENING ON PORT:" + PORT);

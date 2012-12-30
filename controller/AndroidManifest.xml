@@ -7,10 +7,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
-    <!-- can't use vid thumbnails stuff in less than 5 -->
-    <!-- can't support 3GP videos and older audio codecs in less than 7 -->
-    <uses-sdk android:minSdkVersion="8" />
+    <!-- for multicast and such need at least 2.3.7? -->
+    <uses-sdk android:minSdkVersion="9" />
 
     <uses-feature android:name="android.hardware.wifi" />
     <uses-feature android:name="android.hardware.touchscreen" />

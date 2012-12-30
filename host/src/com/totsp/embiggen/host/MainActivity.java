@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -18,7 +17,6 @@ import android.widget.VideoView;
 import android.widget.ViewSwitcher;
 
 import com.google.common.base.Optional;
-import com.totsp.android.util.NetworkUtil;
 import com.totsp.embiggen.host.messageserver.MessageServer;
 import com.totsp.embiggen.host.util.ImageUtil;
 
@@ -41,7 +39,7 @@ final public class MainActivity extends BaseActivity {
 
    // TODO MessageServer here is temp for quick test, will be in service
    private MessageServer messageServer;
-   
+
    //
    // standard android lifecycle methods
    //
@@ -85,24 +83,21 @@ final public class MainActivity extends BaseActivity {
                }
             });
          }
-      };
-      
-      
-      // TEMPORARY, just start MessageServer and test it
-      WifiManager wifiMgr = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-      String wifiIpAddress = NetworkUtil.getWifiIpAddress(wifiMgr);
-      messageServer = new MessageServer(wifiIpAddress);
-      messageServer.start(MessageServer.DEFAULT_SERVER_PORT);
+      };      
    }
-   
+
    @Override
-   protected synchronized void onStart() {
+   protected void onStart() {
       super.onStart();
       Log.i(MainActivity.class.getSimpleName(), "in onStart(); haveNetwork is " + haveNetwork);
       IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
       registerReceiver(networkStateReceiver, filter);
+      
+      // TEMPORARY, just start MessageServer and test it (will be service)     
+      messageServer = new MessageServer(this);
+      messageServer.start(MessageServer.DEFAULT_SERVER_PORT);
    }
-   
+
    @Override
    protected void onPause() {
       super.onPause();
@@ -114,16 +109,16 @@ final public class MainActivity extends BaseActivity {
 
       unregisterReceiver(networkStateReceiver);
       haveNetwork = Optional.absent();
-      
+
       messageServer.stop();
-      
+
       super.onStop();
    }
 
    @Override
    protected void onDestroy() {
       super.onDestroy();
-   }   
+   }
 
    @Override
    protected String getViewName() {
@@ -177,8 +172,6 @@ final public class MainActivity extends BaseActivity {
       */
    }
 
-   
-
    /*
    @Override
    public void onCreateRoom(final IMCResult result, IMCRoom room) {
@@ -197,8 +190,7 @@ final public class MainActivity extends BaseActivity {
          }
       });
    }
-   */   
-
+   */
 
    // declare and register messages we expect to receive from other Connect clients
    // (this is the apps message "protocol" in terms of ids)

@@ -57,13 +57,16 @@ public class Login extends BaseActivity {
 
    @Override
    protected void onStart() {
-      messageClient = new MessageClient();
+      messageClient = new MessageClient(this);
+      messageClient.start();
+      
       super.onStart();
    }
 
    @Override
    protected void onStop() {
-      messageClient.terminateClient();
+      messageClient.stop();
+      
       super.onStop();
    }
 

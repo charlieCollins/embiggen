@@ -12,6 +12,5 @@
 	<classpathentry kind="lib" path="libs/libGoogleAnalytics-2.0b3.jar"/>
 	<classpathentry kind="lib" path="libs/square-dagger-1.0-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="libs/square-otto-1.3.2.jar"/>
-	<classpathentry kind="lib" path="libs/netty-3.6.0.Final.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

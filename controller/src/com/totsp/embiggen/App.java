@@ -83,9 +83,7 @@ public class App extends Application {
       };
       Intent intent = new Intent(this, HTTPServerService.class);
       Log.i(App.TAG, "calling bind service");
-      bindService(intent, connection, Context.BIND_AUTO_CREATE);
-
-      // TODO anymote  
+      ///bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
       String gaId = runtimeLoader.getGoogleAnalyticsId();
       if (gaId != null && !gaId.trim().equals("")) {

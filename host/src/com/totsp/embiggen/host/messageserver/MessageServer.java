@@ -1,127 +1,132 @@
 package com.totsp.embiggen.host.messageserver;
 
-import org.jboss.netty.bootstrap.ConnectionlessBootstrap;
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.channel.ChannelState;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.FixedReceiveBufferSizePredictorFactory;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.ChannelGroupFuture;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
-import org.jboss.netty.channel.socket.DatagramChannel;
-import org.jboss.netty.channel.socket.DatagramChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioDatagramChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.handler.codec.string.StringEncoder;
-import org.jboss.netty.util.CharsetUtil;
+import android.content.Context;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
+import android.util.Log;
 
-import java.net.InetSocketAddress;
+import com.totsp.android.util.NetworkUtil;
+import com.totsp.embiggen.host.App;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 
+/**
+ * Small plain Java message SERVER for communication via sockets on Android. 
+ * 
+ * NOTE: This server has two sockets: 
+ * 1. One that BROADCASTS the host:port of the regular socket server for discovery purposes, 
+ * 2. Another that is the regular socket server itself (where messages are sent/recieved). 
+ * (Tried multicast for the discovery, but that failed on many Android devices, so just broadcast -- tiny messages.)
+ * 
+ * NOTE: Format of the discovery message is as follows:
+ * EMBIGGEN_HOST~1.2.3.4:1234
+ * 
+ * @author ccollins
+ *
+ */
 public class MessageServer {
+   
+   // TODO validate that device has network connectivity, and that it's LAN (and add connectivity receiver?)
+   
+   // TODO broadcast port is hard coded, regular server port could be random? 
+   // (need to figure out how clients can select a suitable server if more than one present?)
+   
+   // TODO threading, all this will run on main thread as is, that is bad, very bad, and I should feel bad
+   
+   // TODO use BaseStartStop for this
+   
+   // FUTURE enhance this by switching to using the SSDP discovery protocol (still just multicast, but use defined protocol)
+   // (http://4thline.org/projects/cling ?)
 
    public static final int DEFAULT_SERVER_PORT = 8379;
-   public static final int BROADCAST_SERVER_PORT = 8378;
+
+   public static final String BROADCAST_FIXED_NET = "255.255.255.255";
+   public static final int BROADCAST_FIXED_PORT = 8378;
 
    private static final int BROADCAST_FREQUENCY_MILLIS = 6000;
+   private static final String EMBIGGEN_HOST = "EMBIGGEN_HOST";
+   private static final char DELIMITER = '~';
 
-   // TODO server needs to pick an available port
-   // TODO server needs to BROADCAST periodically what host/port it is?    
+   private WifiManager wifiManager;
+   private Timer broadcastTimer;
+   private TimerTask broadcastTimerTask;
 
-   private static final ChannelGroup CHANNEL_GROUP = new DefaultChannelGroup();
+   private DatagramSocket broadcastSocket;   
 
-   private ChannelFactory channelFactory;
-
-   private DatagramChannelFactory datagramChannelFactory;
-   private DatagramChannel datagramChannel;
-
-   private String wifiAddress;
-
-   public MessageServer(String wifiAddress) {
-
-      //Log.i(Constants.LOG_TAG, "ANDROID MESSAGE SERVER INSTANTIATED");
-      System.out.println("MessageServer instantiated, wifiAddress:" + wifiAddress);
-
-      this.wifiAddress = wifiAddress;
-   }
-
-   private void startBroadcastTimer(final InetSocketAddress addr) {
-      Timer timer = new Timer();
-      TimerTask timerTask = new TimerTask() {
-         @Override
-         public void run() {
-            sendBroadcast(addr);
-         }
-      };
-      timer.schedule(timerTask, 0, BROADCAST_FREQUENCY_MILLIS);
-   }
-
-   private void stopBroadcastTimer() {
-      // TODO
+   public MessageServer(Context context) {
+      wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+      Log.i(App.TAG, "MessageServer instantiated");
    }
 
    public void start(int port) {
-
-      // TODO validate that device has network connectivity, and that it's LAN (and add connectivity receiver?)
-
-      InetSocketAddress addr = new InetSocketAddress(port);
-
-      initServer(addr);
-
-      initBroadcastServer();
-      startBroadcastTimer(addr);
-
-      System.out.println("MessageServer started (port:" + port + ")");
+      initServer();
+      startBroadcasting(port);
+      Log.i(App.TAG, "MessageServer started (port:" + port + ")");
    }
 
    public void stop() {
-
       terminateServer();
+      stopBroadcasting();
+      Log.i(App.TAG, "MessageServer stopped");
+   }
 
+   //
+   // priv
+   //
+
+   private void startBroadcasting(final int port) {
+      if (broadcastTimerTask != null) {
+         broadcastTimerTask.cancel();
+      }
+      if (broadcastTimer != null) {
+         broadcastTimer.purge();
+         broadcastTimer.cancel();
+      }
+
+      broadcastTimer = new Timer();
+      broadcastTimerTask = new TimerTask() {
+         @Override
+         public void run() {
+            sendBroadcast(port);
+         }
+      };
+      broadcastTimer.schedule(broadcastTimerTask, 0, BROADCAST_FREQUENCY_MILLIS);
+   }
+
+   private void stopBroadcasting() {
+      broadcastTimerTask.cancel();
+      broadcastTimer.purge();
+      broadcastTimer.cancel();
       terminateBroadcastServer();
-      stopBroadcastTimer();
-
-      System.out.println("MessageServer stopped");
    }
 
    private void initBroadcastServer() {
-      // broadcast resources
-      datagramChannelFactory = new NioDatagramChannelFactory(Executors.newCachedThreadPool());
-      ConnectionlessBootstrap b = new ConnectionlessBootstrap(datagramChannelFactory);
-      b.setOption("broadcast", "true");
-      b.setOption("receiveBufferSizePredictorFactory", new FixedReceiveBufferSizePredictorFactory(1024));
-      b.setPipelineFactory(new ChannelPipelineFactory() {
-         public ChannelPipeline getPipeline() {
-            return Channels.pipeline(new StringDecoder(CharsetUtil.UTF_8), new StringEncoder(CharsetUtil.UTF_8),
-                     new DelimiterBasedFrameDecoder(80, Delimiters.lineDelimiter()), new MessageHandler());
-         }
-      });
-      datagramChannel = (DatagramChannel) b.bind(new InetSocketAddress(0));
+      Log.i(App.TAG, "MESSAGESERVER initBroadcastServer");
+
+      try {
+         broadcastSocket = new DatagramSocket(BROADCAST_FIXED_PORT);
+         broadcastSocket.setBroadcast(true);
+
+      } catch (Exception e) {
+         Log.e(App.TAG, "Error initiliazing broadcast server", e);
+      }
    }
 
    private void terminateBroadcastServer() {
-      datagramChannel.close();
-      datagramChannelFactory.releaseExternalResources();
+      if (broadcastSocket != null && broadcastSocket.isBound()) {
+         broadcastSocket.close();
+      }
    }
 
-   private void initServer(InetSocketAddress addr) {
-      //
-      // regular message stuff
-      //
+   private void initServer() {
+      Log.i(App.TAG, "MESSAGESERVER initServer");
+
+      /*
       channelFactory =
                new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
 
@@ -134,67 +139,44 @@ public class MessageServer {
       });
       bootstrap.setOption("child.tcpNoDelay", true);
       bootstrap.setOption("child.keepAlive", true);
-
-      bootstrap.bind(addr);
+      channel = bootstrap.bind(addr);
+      */
    }
 
    private void terminateServer() {
-      ChannelGroupFuture future = CHANNEL_GROUP.close();
-      future.awaitUninterruptibly();
-      channelFactory.releaseExternalResources();
+      //ChannelGroupFuture future = CHANNEL_GROUP.close();
+      //future.awaitUninterruptibly();
+      //channel.close();
+      //channelFactory.releaseExternalResources();
    }
 
-   private void sendBroadcast(InetSocketAddress addr) {
+   private void sendBroadcast(int port) {
+
       // broadcast the server host/port          
-      if (datagramChannel != null && datagramChannel.isBound()) {
-         String msg = "MESSAGESERVER_BROADCAST:HOST:" + wifiAddress + ":" + addr.getPort();
-         datagramChannel.write(msg, new InetSocketAddress("255.255.255.255", 8889));
-         System.out.println("MessageServer sent status broadcast:" + msg);
+      if (broadcastSocket == null || !broadcastSocket.isBound()) {
+         initBroadcastServer();
       } else {
-         System.out.println("datagramChannel null or not connected");
+         // as an ode to the RPG programmers of yore, I use the tilde as a delimeter! (this sucks balls BTW)
+         String wifiIpAddress = NetworkUtil.getWifiIpAddress(wifiManager);
+         String msg = EMBIGGEN_HOST + DELIMITER + wifiIpAddress + ":" + port;
+         try {
+            broadcastSocket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, getBroadcastAddress(),
+                     BROADCAST_FIXED_PORT));
+         } catch (IOException e) {
+            Log.e(App.TAG, "Error sending broadcast", e);
+         }
+
+         Log.i(App.TAG, "MessageServer sent status broadcast:" + msg);
       }
    }
 
-   //
-   // handlers
-   // 
-
-   private static class MessageHandler extends SimpleChannelUpstreamHandler {
-
-      public MessageHandler() {
+   private InetAddress getBroadcastAddress() throws IOException {
+      DhcpInfo dhcp = wifiManager.getDhcpInfo();
+      int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
+      byte[] quads = new byte[4];
+      for (int k = 0; k < 4; k++) {
+         quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
       }
-
-      @Override
-      public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) {
-         CHANNEL_GROUP.add(e.getChannel());
-      }
-
-      @Override
-      public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
-         if (e instanceof ChannelStateEvent && ((ChannelStateEvent) e).getState() != ChannelState.INTEREST_OPS) {
-            System.out.println("SERVER handleUpStream:" + e.toString());
-         }
-         super.handleUpstream(ctx, e);
-      }
-
-      @Override
-      public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
-
-         String msg = (String) e.getMessage();
-
-         System.out.println("SERVER messageReceived:" + msg);
-
-         //ctx.getChannel().write("back from server BAR FOO!");
-
-         //transferredMessages.incrementAndGet();
-         //e.getChannel().write(e.getMessage());
-      }
-
-      @Override
-      public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-         System.err.println("SERVER unexpected exception from downstream:" + e.getCause().getMessage());
-         e.getCause().printStackTrace();
-         e.getChannel().close();
-      }
+      return InetAddress.getByAddress(quads);
    }
 }
