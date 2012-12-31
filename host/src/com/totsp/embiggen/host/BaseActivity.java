@@ -42,7 +42,7 @@ public abstract class BaseActivity extends Activity {
    @Override
    protected void onResume() {
       super.onResume();
-
+      app.bus.register(this);
    }
 
    protected abstract String getViewName();
@@ -53,7 +53,7 @@ public abstract class BaseActivity extends Activity {
       if (dialog != null) {
          dialog.dismiss();
       }
-
+      app.bus.unregister(this);
    }
 
    @Override

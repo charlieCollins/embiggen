@@ -4,11 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.http.AndroidHttpClient;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.totsp.embiggen.host.App;
 import com.totsp.embiggen.host.R;
 
@@ -18,30 +18,34 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 
 import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
 
 public final class ImageUtil {
 
    // TODO validate and review this, consider using built in cache file locations after X memory is used? 
-   // also move to MOVL utils if we think this is useful
+   // also move to utils if we think this is useful
 
+   // TODO replace LoadingCache, since that's all we were using Guava for (don't include Guava for that)
+   
    // argh, want to make the cache static, but need resources, needs more work
    
+   /*
    private final LoadingCache<String, Bitmap> URL_BITMAP_CACHE = CacheBuilder.newBuilder().maximumSize(100)
             .expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<String, Bitmap>() {
                public Bitmap load(String urlString) {
                   return downloadBitmap(urlString);
                }
             });
+            */
 
    private Context context;
-
+   
    public ImageUtil(Context context) {
-      this.context = context;
+      this.context = context;      
    }
 
-   public Bitmap get(String url) {
-      return URL_BITMAP_CACHE.getUnchecked(url);
+   public Bitmap get(String urlString) {
+      //return URL_BITMAP_CACHE.getUnchecked(url);      
+      return downloadBitmap(urlString);
    }  
 
    // does NOT throw exceptions, so cache users should getUnchecked

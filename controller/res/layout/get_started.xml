@@ -89,13 +89,13 @@
         android:visibility="gone" />
     
     <Button
-        android:id="@+id/get_started_rescan"
+        android:id="@+id/get_started_forget_current_host"
         style="@style/altFontMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"       
         android:layout_marginBottom="10dp"
         android:background="@drawable/button_blue"
-        android:text="Rescan for host"
+        android:text="Forget current host"
         android:visibility="gone" />
 
     <TextView

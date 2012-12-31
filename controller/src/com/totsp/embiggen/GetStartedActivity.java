@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,10 +23,14 @@ import java.util.TimerTask;
 
 public class GetStartedActivity extends BaseFragmentActivity {
 
-   // TODO need a rescan path once in app (bring users back here?)
+   // TODO need a forgetCurrentHost path once in app (bring users back here?)
+   
+   // TODO make sure host is discarded if it goes away, poll/check every so often?
+   
+   // TODO start scan initially from here, not app 
 
    private Button scan;
-   private Button rescan;
+   private Button forgetCurrentHost;
    private Button useCurrentHost;
    private TextView version;
    private Timer timer;
@@ -54,12 +59,12 @@ public class GetStartedActivity extends BaseFragmentActivity {
          }
       });
 
-      rescan = (Button) findViewById(R.id.get_started_rescan);
-      rescan.setOnClickListener(new OnClickListener() {
+      forgetCurrentHost = (Button) findViewById(R.id.get_started_forget_current_host);
+      forgetCurrentHost.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View v) {
-            app.getMessageClientService().restartClient();
-            startScan();
+            app.getMessageClientService().restartClient(); 
+            updateViews(true);
          }
       });
 
@@ -69,36 +74,38 @@ public class GetStartedActivity extends BaseFragmentActivity {
          public void onClick(View v) {
             startActivity(new Intent(GetStartedActivity.this, MainActivity.class));
          }
-      });
-
-      timer = new Timer();
+      });      
    }
 
    @Override
    protected void onPostResume() {
       super.onPostResume();
-
-      updateViews();
+      if (timer != null) {
+         timer.purge();
+         timer.cancel();
+      }
+      timer = new Timer();
+      updateViews(false);
    }
 
-   private void updateViews() {
+   private void updateViews(boolean restart) {
 
       // based on state we update views, if we have found a host already, show it and allow RESCAN
       // if we have not found a host, show scan 
 
       InetSocketAddress host = null;
 
-      if (app.getMessageClientService() != null) {
+      if (!restart && app.getMessageClientService() != null) {
          host = app.getMessageClientService().getHostInetSocketAddress();
       }
 
       if (host != null) {
          scan.setVisibility(View.GONE);
-         rescan.setVisibility(View.VISIBLE);
+         forgetCurrentHost.setVisibility(View.VISIBLE);
          useCurrentHost.setVisibility(View.VISIBLE);
       } else {
          scan.setVisibility(View.VISIBLE);
-         rescan.setVisibility(View.GONE);
+         forgetCurrentHost.setVisibility(View.GONE);
          useCurrentHost.setVisibility(View.GONE);
       }
    }
@@ -131,7 +138,7 @@ public class GetStartedActivity extends BaseFragmentActivity {
 
    private void startScan() {
 
-      // TODO this scanning stuff is a convoluted mess, use the bus
+      // TODO this scanning stuff is a convoluted mess, clena up, and use the bus
       
       InetSocketAddress host = null;
       if (app.getMessageClientService() != null) {

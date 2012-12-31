@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Embiggen</string>    
+    <string name="app_name">Embiggen Host</string>    
     <string name="connecting">Connecting...</string>
     <string name="footer_text">Download the Embiggen mobile app to get in on the action</string>
     <string name="share_text">Use your mobile to share pics and videos on the big screen</string>

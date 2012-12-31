@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.analytics.tracking.android.Tracker;
+import com.squareup.otto.Bus;
 import com.totsp.android.util.Installation;
 import com.totsp.embiggen.host.messageserver.MessageServerService;
 
@@ -21,6 +22,8 @@ public class App extends Application {
 
    private ConnectivityManager cMgr;
    private SharedPreferences prefs;
+   
+   protected Bus bus;
 
    private ServiceConnection messageServerServiceConnection;
    private boolean messageServerServiceBound;
@@ -40,6 +43,9 @@ public class App extends Application {
       cMgr = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
       prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+      bus = new Bus();
+      bus.register(this);
+      
       messageServerServiceConnection = new ServiceConnection() {
          @Override
          public void onServiceConnected(ComponentName className, IBinder binder) {
@@ -87,7 +93,7 @@ public class App extends Application {
          messageServerServiceBound = false;
       }
 
-      //bus.unregister(this);
+      bus.unregister(this);
 
       if (gaTracker != null) {
          gaTracker.close();
@@ -121,4 +127,12 @@ public class App extends Application {
    public String getInstallationId() {
       return Installation.id(this);
    }
+
+   public Bus getBus() {
+      return this.bus;
+   }
+
+   public void setBus(Bus bus) {
+      this.bus = bus;
+   }  
 }

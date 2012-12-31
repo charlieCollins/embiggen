@@ -3,10 +3,13 @@ package com.totsp.embiggen.host.messageserver;
 import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.util.Log;
 
+import com.squareup.otto.Bus;
 import com.totsp.android.util.NetworkUtil;
 import com.totsp.embiggen.host.App;
+import com.totsp.embiggen.host.event.DisplayMediaEvent;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,12 +47,13 @@ public class MessageServer {
 
    // TODO validate that device has network connectivity, and that it's LAN (and add connectivity receiver?)
 
-   // TODO broadcast port is hard coded, regular server port could be random? 
-   // (need to figure out how clients can select a suitable server if more than one present?)
+   // TODO need to figure out how clients can select a particular server if more than one present?
 
    // TODO use BaseStartStop for this
 
-   // FUTURE enhance this by switching to using the SSDP discovery protocol (still just multicast, but use defined protocol)
+   // TODO socket timeouts and options on all sockets
+
+   // FUTURE enhance this by switching to mDNS or SSDP, etc for discovery
    // (http://4thline.org/projects/cling ?)
 
    public static final int DEFAULT_SERVER_PORT = 8379;
@@ -70,22 +74,30 @@ public class MessageServer {
 
    private ServerSocket serverSocket;
    private final ExecutorService serverExecutor;
+   
+   private Context context;
+   private final Bus bus; // TODO inject bus
 
-   public MessageServer(Context context) {
+   public MessageServer(Context context, Bus bus) {
       wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
       Log.i(App.TAG, "MessageServer instantiated");
 
+      this.context = context;
+      this.bus = bus;
+      
       broadcastExecutor = Executors.newFixedThreadPool(1);
-      serverExecutor = Executors.newFixedThreadPool(5);
+      serverExecutor = Executors.newFixedThreadPool(20);      
    }
 
    public void start(int port) {
+      //bus.register(this);
       startBroadcasting(port);
       initServer(port);
       Log.i(App.TAG, "MessageServer started (port:" + port + ")");
    }
 
    public void stop() {
+      //bus.unregister(this);
       stopBroadcasting();
       terminateServer();
       Log.i(App.TAG, "MessageServer stopped");
@@ -106,6 +118,8 @@ public class MessageServer {
          broadcastTimer.cancel();
       }
 
+      // kind of ugly that here we use Timer rather than executor 
+      // (we do it for easy frequency schedule purposes, but that's not a good excuse)
       broadcastTimer = new Timer();
       broadcastTimerTask = new TimerTask() {
          @Override
@@ -143,7 +157,7 @@ public class MessageServer {
       try {
          broadcastExecutor.awaitTermination(10, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
-         Log.e(App.TAG, "ERROR stopping server:" + e.getMessage(), e);
+         Log.e(App.TAG, "Error stopping server:" + e.getMessage(), e);
       }
       broadcastExecutor.shutdownNow();
 
@@ -157,10 +171,11 @@ public class MessageServer {
       try {
          serverSocket = new ServerSocket(port);
          while (!serverExecutor.isShutdown()) {
-            serverExecutor.submit(new RequestResponse(serverSocket.accept()));
+            // NOTE plain socket (TCP) only RESPONDS to requests, does not expose "send" functionality
+            serverExecutor.submit(new RequestResponseHandler(serverSocket.accept()));
          }
       } catch (IOException e) {
-         Log.e(App.TAG, "ERROR starting server:" + e.getMessage(), e);
+         Log.e(App.TAG, "Error starting server:" + e.getMessage(), e);
       }
    }
 
@@ -171,14 +186,14 @@ public class MessageServer {
       try {
          serverExecutor.awaitTermination(10, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
-         Log.e(App.TAG, "ERROR stopping server:" + e.getMessage(), e);
+         Log.e(App.TAG, "Error stopping server:" + e.getMessage(), e);
       }
       serverExecutor.shutdownNow();
 
       try {
          serverSocket.close();
       } catch (Exception e) {
-         Log.e(App.TAG, "ERROR closing socket", e);
+         Log.e(App.TAG, "Error closing socket", e);
       }
    }
 
@@ -203,7 +218,6 @@ public class MessageServer {
                }
             }
          });
-
          ///Log.v(App.TAG, "   sent broadcast:" + msg);
       }
    }
@@ -222,13 +236,14 @@ public class MessageServer {
    // classes
    //
 
-   private static class RequestResponse implements Runnable {
+   private class RequestResponseHandler implements Runnable {
       private final Socket socket;
 
-      RequestResponse(final Socket socket) throws SocketException {
+      RequestResponseHandler(final Socket socket) throws SocketException {
          this.socket = socket;
       }
 
+      // FUTURE break this up
       public void run() {
          try {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -243,22 +258,65 @@ public class MessageServer {
                lines.add(line);
             }
 
+            if (lines.size() > 1) {
+               Log.w(App.TAG, "MessageServer request lines size:" + lines.size() + " lines beyond first will be ignored");
+            }
+
             String request = lines.get(0); // first line
-            System.out.println("**** SERVER REQUEST INPUT:" + request);
+            Log.d(App.TAG, "MessageServer input request:" + request);
+            
+            // TODO create separate handler/processor for protocol strings (right now just DISPLAY_MEDIA~)
+            if (request != null && request.startsWith("DISPLAY_MEDIA~")) { 
+               request.trim();
+               final String urlString = request.substring(request.indexOf("~") + 1, request.length());
+               Log.v(App.TAG, "MessageServer sending DISPLAY_MEDIA event, urlString:" + urlString);               		
+               
+               runOnMainThread(new Runnable() {
+                  public void run() {
+                     bus.post(new DisplayMediaEvent(urlString));               
+                  }
+               });               
+            }
 
-            // send response?
-            System.out.println("**** SERVER SENDING ACK RESPONSE");
-            OutputStream out = socket.getOutputStream();
-            String response = "EMBIGGEN SERVER ACK";
-            out.write(response.getBytes(), 0, response.getBytes().length);
-            out.flush();
-            out.close();
+            // send ack response (future response code and error handling if content can't be served?)
+            OutputStream out = null;
+            try {           
+               out = socket.getOutputStream();
+               String response = "EMBIGGEN SERVER ACK";
+               out.write(response.getBytes(), 0, response.getBytes().length);
+               out.flush();
+               
+            } finally {
 
-            socket.close();
-
+               // TODO will this leak OutputStreams, research keeping socket open (rather than re-est each time)
+               // ??? keep one OutputStream around? (closing it will close socket)
+               /*
+               if (out != null) {
+                  out.close();
+               }
+               */
+            }            
          } catch (IOException e) {
-            Log.e(App.TAG, "ERROR I/O exception", e);
+            Log.e(App.TAG, "Error I/O exception", e);
+         } finally {
+            
+            // TODO don't close socket, check timeouts, heartbeat, etc
+            
+            /*
+            if (socket != null) {
+               try {
+                  socket.close();
+               } catch (IOException e) {
+                  //ignore
+               }
+            }
+            */
          }
       }
+   }
+   
+   // MessageServer is off the main thread, so to run stuff back on main, use this
+   private synchronized void runOnMainThread(Runnable r) {
+      new Handler(context.getMainLooper()).post(r);
    }
 }

@@ -29,14 +29,6 @@
             android:layout_toRightOf="@id/footer_image_view"
             android:text="@string/footer_text" />
 
-        <TextView
-            android:id="@+id/footer_code_view"
-            style="@style/mainFontExtraLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_margin="10dp"
-            android:text="12345" />
     </RelativeLayout>
 
     <ViewSwitcher
@@ -70,13 +62,10 @@
                 android:layout_height="fill_parent"
                 android:layout_margin="10dp" />
 
-            <VideoView
-                android:id="@+id/share_video_view"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_margin="10dp"
-                android:visibility="gone" />
+            
         </RelativeLayout>
     </ViewSwitcher>
-
+    
+    <!--  TODO VideoView for video -->
+   
 </RelativeLayout>

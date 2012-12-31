@@ -6,7 +6,6 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Log;
 
 import com.totsp.embiggen.App;
@@ -18,7 +17,10 @@ public class MessageClientService extends Service {
    // TODO add methods here so callers can send outgoing messages via the client (through this service)
    // TODO post any incoming messages here to the Bus (so clients don't have to hang off listeners and shit)
 
-   private Looper backLooper; // background looper, only used here internally
+   // TDOO investigate HandlerThread and back looper more, doesn't always post?
+   // also keep in mind MessageClient has executors?
+   private HandlerThread backThread; // background looper, only used here internally
+   private Handler backHandler;
 
    // TODO private final Bus bus;   
 
@@ -36,18 +38,17 @@ public class MessageClientService extends Service {
    public void onCreate() {
       super.onCreate();
 
-      HandlerThread thread = new HandlerThread("BackLooper", Thread.NORM_PRIORITY);
-      thread.start();
-      backLooper = thread.getLooper();
+      backThread = new HandlerThread("BackLooper", Thread.NORM_PRIORITY);
+      backThread.start();
+      backHandler = new Handler(backThread.getLooper());
 
       Log.d(App.TAG, "MessageClientService ON CREATE");
 
-      // run off of main/UI Thread (service uses same thread as other components by default)
       runOnBackThread(new Runnable() {
          @Override
          public void run() {
             client = new MessageClient(MessageClientService.this);
-            client.start();
+            client.start(); // don't auto start?
          }
       });
    }
@@ -64,6 +65,8 @@ public class MessageClientService extends Service {
             }
          }
       });
+
+      backThread.quit();
    }
 
    @Override
@@ -100,24 +103,25 @@ public class MessageClientService extends Service {
    }
 
    public void sendMessageToHost(final String msg) {
-      if (client != null && client.getHostInetSocketAddress() != null) {
-         runOnBackThread(new Runnable() {
-            @Override
-            public void run() {
+      runOnBackThread(new Runnable() {
+         @Override
+         public void run() {
+            if (client != null && client.getHostInetSocketAddress() != null) {
                client.sendMessage(msg);
+            } else {
+               Log.e(App.TAG, "Cannot send message, client is null, or has not discovered host");
             }
-         });
-      } else {
-         Log.e(App.TAG, "Cannot send message, client is null, or has not discovered host");
-      }
+         }
+      });
    }
 
    //
    // priv
    //
 
+   // NOTE this is a SINGLE background thread, if runnables posted to it block, then any subsequent requests block!
    private synchronized void runOnBackThread(Runnable r) {
-      new Handler(backLooper).post(r);
+      backHandler.post(r);
    }
 
    /*

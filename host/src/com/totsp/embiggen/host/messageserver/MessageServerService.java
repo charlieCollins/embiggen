@@ -8,6 +8,8 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 
+import com.totsp.embiggen.host.App;
+
 import java.util.Random;
 
 public class MessageServerService extends Service {
@@ -48,11 +50,13 @@ public class MessageServerService extends Service {
       
       System.out.println("MessageServerService ON CREATE, random port:" + port);
       
+      final App app = (App) this.getApplication();
+      
       // run off of main/UI Thread (service uses same thread as other components by default)
       runOnBackThread(new Runnable() {
          @Override
          public void run() {
-            server = new MessageServer(MessageServerService.this);
+            server = new MessageServer(MessageServerService.this, app.getBus());
             server.start(port);
          }
       });
