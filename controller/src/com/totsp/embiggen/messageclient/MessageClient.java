@@ -11,16 +11,13 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-
-// TODO see TODOs in MessageServer, threading, check net conn, BaseStartStop, etc
-
-// TODO once client gets broadcast that a server is around, stop broadcast reciever, start reg socket
+import java.net.InetSocketAddress;
 
 /**
  * Small plain Java message CLIENT for communication via sockets on Android. 
  * 
- * NOTE: This client has two sockets at various times: 
- * 1. Initially the client tries to DISCOVER a server using BROADCASTS.
+ * NOTE: This client has two sockets, used one at a time (one after the other): 
+ * 1. Initially the client tries to DISCOVER a server using BROADCASTS (UDP socket).
  * 2. If a server is successfully discovered, the client shuts down the broadcast socket and opens a regular socket for messaging with server (at host:port provided by broadcast). 
  *  
  * NOTE: Format of the discovery message is as follows:
@@ -31,21 +28,30 @@ import java.net.InetAddress;
  */
 public class MessageClient {
 
-   public static final String BROADCAST_FIXED_NET = "255.255.255.255";
+   // TODO executors here, so callers don't have to manage threads on their own?
+   
+   // TODO finish regular socket communications after host discovered
+   
+   public static final String BROADCAST_NET = "255.255.255.255";
    public static final int BROADCAST_FIXED_PORT = 8378;
 
    private DatagramSocket broadcastSocket;
+   private String hostIpAddress;
+   private String hostPort;
 
    private WifiManager wifiManager;
+   private Context context;   
 
    public MessageClient(Context context) {
-      Log.i(App.TAG, "** created MessageClient");
+      Log.i(App.TAG, "instantiated MessageClient");
+      this.context = context;
       wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
    }
+   
+   // NOTE a caller can re-scan by simply calling stop->start
 
    public void start() {
-      initBroadcastClient();
-      // broadcast reception will initClient (init regular client)
+      initBroadcastClient(); // go ahead and start listening at start
    }
 
    public void stop() {
@@ -53,6 +59,19 @@ public class MessageClient {
       terminateClient();
    }
 
+   public InetSocketAddress getHostInetSocketAddress() {
+      InetSocketAddress isa = null;
+      if (hostIpAddress != null && hostPort != null) {
+         try {
+            InetAddress ia = InetAddress.getByName(hostIpAddress);
+            isa = new InetSocketAddress(ia, Integer.valueOf(hostPort));            
+         } catch (IOException e) {
+            Log.e(App.TAG, "Error getting hostInetAddress", e);
+         }
+      }
+      return isa;
+   }
+   
    public void sendMessage(String msg) {
       /*
       if (channel != null && channel.isConnected()) {
@@ -77,29 +96,30 @@ public class MessageClient {
 
          byte[] buffer = new byte[1024];
          DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-         while (true) {            
+         while (true) {
             broadcastSocket.receive(packet);
             // we don't care about encoding/etc for this?
             String data = new String(buffer, 0, packet.getLength());
             Log.i(App.TAG, "CLIENT got packet " + data);
-            processBroadcastData(data);            
+            processBroadcastData(data);
          }
       } catch (Exception e) {
          Log.e(App.TAG, "Broadcast socket error (expected after socket is closed intentionally):" + e.getMessage());
       }
    }
-   
+
    private void processBroadcastData(String data) {
       if (data != null && data.length() > 0) {
-         String hostPort = data.substring(data.indexOf("~") + 1, data.length());         
-         String hostString = hostPort.substring(0, hostPort.indexOf(":"));
-         String portString = hostPort.substring(hostPort.indexOf(":") + 1, hostPort.length());         
-         Log.e(App.TAG, "Got host:port from broadcast (stop broadcast socket), host:" + hostString + " port:" + portString);
-         
+         String hostPortData = data.substring(data.indexOf("~") + 1, data.length());
+         hostIpAddress = hostPortData.substring(0, hostPortData.indexOf(":"));
+         hostPort = hostPortData.substring(hostPortData.indexOf(":") + 1, hostPortData.length());
+         Log.e(App.TAG, "Got host:port from broadcast (stop broadcast socket), host:" + hostIpAddress + " port:"
+                  + hostPort);
+
          // kill the broadcast client and start the regular message client
          terminateBroadcastClient();
-         
-         // TODO regular messaging stuff         
+
+         // TODO regular messaging stuff  XXX GOT HERE       
       }
    }
 

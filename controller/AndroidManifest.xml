@@ -19,47 +19,29 @@
         android:name=".App"
         android:icon="@drawable/icon"
         android:label="Embiggen"
-        android:theme="@style/embiggen_theme" >
+        android:theme="@style/Theme.embiggen" >
         <service android:name="com.totsp.server.HTTPServerService" />
         <service android:name="com.totsp.embiggen.messageclient.MessageClientService" />
 
         <activity
-            android:name=".GetStarted"
+            android:name="com.totsp.embiggen.GetStartedActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Sherlock.Light" >
-        </activity>
-        <activity
-            android:name=".Login"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Sherlock.Light"
-            android:windowSoftInputMode="adjustResize" >
+            android:theme="@style/Theme.embiggen" >
             <intent-filter>
-                <!-- temp start here -->
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".Preferences"
+            android:name="com.totsp.embiggen.MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Sherlock.Light"
+            android:theme="@style/Theme.embiggen"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".LaunchChooser"
+            android:name=".Preferences"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Sherlock.Light" />
-        <activity
-            android:name=".GalleryChooserPhotos"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Sherlock.Light" />
-        <activity
-            android:name=".GalleryChooserVideos"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Sherlock.Light" />
-        <activity
-            android:name=".BucketList"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Sherlock.Light" />
+            android:theme="@style/Theme.embiggen"
+            android:windowSoftInputMode="adjustResize" />        
     </application>
 
 </manifest>

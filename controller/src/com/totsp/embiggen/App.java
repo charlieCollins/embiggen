@@ -17,7 +17,9 @@ import com.google.analytics.tracking.android.Tracker;
 import com.squareup.otto.Bus;
 import com.totsp.android.util.Installation;
 import com.totsp.embiggen.messageclient.MessageClientService;
+import com.totsp.embiggen.messageclient.MessageClientService.MessageClientServiceLocalBinder;
 import com.totsp.embiggen.util.RuntimeLoader;
+import com.totsp.server.HTTPServerService;
 
 public class App extends Application {
 
@@ -35,6 +37,7 @@ public class App extends Application {
 
    private ServiceConnection messageClientServiceConnection;
    private boolean messageClientServiceBound;
+   private MessageClientService messageClientService;
 
    private Tracker gaTracker;
 
@@ -62,42 +65,36 @@ public class App extends Application {
       prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
       cMgr = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-      /*
-      httpServiceConnection = new ServiceConnection() {
+      
+      httpServerServiceConnection = new ServiceConnection() {
          @Override
-         public void onServiceConnected(ComponentName className, IBinder binder) {
-            
-            httpServiceBound = true;
+         public void onServiceConnected(ComponentName className, IBinder binder) {            
+            httpServerServiceBound = true;
             Log.i(App.TAG, "http service connected");
          }
 
          @Override
          public void onServiceDisconnected(ComponentName comp) {
-            // TODO make sure service.onDestroy cleans up sockets/etc
-            httpServiceBound = false;
+            httpServerServiceBound = false;
             Log.i(App.TAG, "http service disconnected");
          }
       };    
       Log.i(App.TAG, "calling bind http service");
-      ///bindService(new Intent(this, HTTPServerService.class), connection, Context.BIND_AUTO_CREATE);       
-       */
+      bindService(new Intent(this, HTTPServerService.class), httpServerServiceConnection, Context.BIND_AUTO_CREATE);       
 
       messageClientServiceConnection = new ServiceConnection() {
          @Override
-         public void onServiceConnected(ComponentName className, IBinder binder) {
-            /*
-            LocalBinder localBinder = (LocalBinder) binder;
-            HTTPServerService service = localBinder.getService();             
-             */
+         public void onServiceConnected(ComponentName className, IBinder binder) {            
+            MessageClientServiceLocalBinder localBinder = (MessageClientServiceLocalBinder) binder;
+            messageClientService = localBinder.getService();             
             messageClientServiceBound = true;
             Log.i(App.TAG, "socket service connected");
          }
 
          @Override
          public void onServiceDisconnected(ComponentName comp) {
-            // TODO make sure service.onDestroy cleans up sockets/etc
             messageClientServiceBound = false;
+            messageClientService = null;
             Log.i(App.TAG, "socket service disconnected");
          }
       };
@@ -150,6 +147,13 @@ public class App extends Application {
 
    public String getInstallationId() {
       return Installation.id(this);
+   }
+   
+   //
+   // message client
+   //
+   public MessageClientService getMessageClientService() {
+      return this.messageClientService;
    }
 
    //

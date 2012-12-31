@@ -2,4 +2,12 @@
     <color name="blue_u">#FF244e69</color>
     <color name="blue_s">#FF004b9b</color>
     <color name="blue_dark">#29516b</color>
+    
+    <color name="blue_dark">#001f4d</color>
+    <color name="blue_light">#496082</color>
+    <color name="bluish_grayish">#eeeff5</color>
+    <color name="dark_gray">#515254</color>
+    <color name="med_gray">#c8c9ce</color>
+    <color name="light_gray">#bdbec2</color>
+    
 </resources>

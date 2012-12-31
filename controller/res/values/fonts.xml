@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="mainFontExtraLarge" parent="@android:style/TextAppearance.Large">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">48sp</item>
+    </style>
+
+    <style name="mainFontLarge" parent="@android:style/TextAppearance.Large">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="mainFontMedium" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="mainFontSmall" parent="@android:style/TextAppearance.Small">
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="altFontLarge" parent="@android:style/TextAppearance.Large">
+        <item name="android:textColor">@color/med_gray</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="altFontMedium" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@color/med_gray</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="altFontSmall" parent="@android:style/TextAppearance.Small">
+        <item name="android:textColor">@color/med_gray</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    
+
+	
+</resources>

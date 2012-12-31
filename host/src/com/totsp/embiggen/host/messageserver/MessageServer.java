@@ -47,8 +47,6 @@ public class MessageServer {
    // TODO broadcast port is hard coded, regular server port could be random? 
    // (need to figure out how clients can select a suitable server if more than one present?)
 
-   // TODO threading, all this will run on main thread as is, that is bad, very bad, and I should feel bad
-
    // TODO use BaseStartStop for this
 
    // FUTURE enhance this by switching to using the SSDP discovery protocol (still just multicast, but use defined protocol)
@@ -56,7 +54,7 @@ public class MessageServer {
 
    public static final int DEFAULT_SERVER_PORT = 8379;
 
-   public static final String BROADCAST_FIXED_NET = "255.255.255.255";
+   public static final String BROADCAST_NET = "255.255.255.255";
    public static final int BROADCAST_FIXED_PORT = 8378;
 
    private static final int BROADCAST_FREQUENCY_MILLIS = 6000;
@@ -251,7 +249,7 @@ public class MessageServer {
             // send response?
             System.out.println("**** SERVER SENDING ACK RESPONSE");
             OutputStream out = socket.getOutputStream();
-            String response = "SERVER ACK";
+            String response = "EMBIGGEN SERVER ACK";
             out.write(response.getBytes(), 0, response.getBytes().length);
             out.flush();
             out.close();

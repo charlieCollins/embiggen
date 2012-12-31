@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+     <item
+        android:id="@+id/menu_help"
+        android:icon="@android:drawable/ic_menu_help"
+        android:menuCategory="system"
+        android:orderInCategory="3"
+        android:showAsAction="ifRoom"
+        android:title="HELP"/>
+    
+    <item
+        android:id="@+id/menu_1"
+        android:menuCategory="system"
+        android:orderInCategory="2"
+        android:showAsAction="ifRoom"
+        android:title="menu1"/>
+    <item
+        android:id="@+id/menu_2"
+        android:menuCategory="system"
+        android:orderInCategory="97"
+        android:showAsAction="never"
+        android:title="menu2"/>
+</menu>

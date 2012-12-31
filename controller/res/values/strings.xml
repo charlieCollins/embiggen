@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="getStarted">Use Embiggen to share content from your mobile device to your Google TV</string>
-    <string name="getStartedWiFiHint">You must also have the Google TV Embiggen app installed on your TV, and your TV and mobile device must be on the same WiFi network.</string>
+    <string name="getStarted">Use Embiggen to share photos and videos among Android devices and make them embigger!</string>
+    
+    <string name="getStartedHostHint">Embiggen requires a HOST to display shared content, get the Embiggen HOST app and run it on a tablet or Google TV</string>
+    <string name="getStartedControllerHint">Once the host is running, as many Embiggen CONTROLLERs as you want can connect and share</string>
+    <string name="getStartedNetHint">Embiggen does *not* send your content to the cloud, all networking is local, host and controllers must be on the same WiFi network</string>
+    
     <string name="help"><b>TODO</b></string>
     
-    <string name="message_no_content">Sorry, no content found (choose a different album or date range, and try again).</string>
-    <string name="message_gallery_empty">Gallery is empty</string>
-    <string name="message_no_results">No results</string>
 
 </resources>

@@ -1,76 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:gravity="center"
     android:background="@drawable/background" >
 
     <ImageView
         android:id="@+id/get_started_logo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"        
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="5dp"
         android:src="@drawable/logo" />
-
-    <LinearLayout
-        android:id="@+id/get_started_center"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"       
-        android:layout_centerVertical="true"
-        android:gravity="center"
-        android:orientation="vertical" >       
-
-        <TextView
+    
+     <TextView
             android:id="@+id/get_started_text"
-            style="@style/altFontSmall"
+            style="@style/altFontMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"            
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
             android:gravity="center"
+            android:textStyle="bold"
             android:text="@string/getStarted" />
 
+    <LinearLayout
+        android:id="@+id/get_started_hints"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_margin="5dp"       
+        android:gravity="center"
+        android:orientation="vertical" 
+        >      
+
         <TextView
-            android:id="@+id/get_started_wifi_hint"
+            android:id="@+id/get_started_host_hint"
             style="@style/altFontSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"            
-            android:layout_centerInParent="true"
-            android:layout_marginBottom="5dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginTop="8dp"
+            android:layout_margin="5dp"           
+            android:textStyle="bold"
             android:gravity="center"
-            android:text="@string/getStartedWiFiHint" />
+            android:text="@string/getStartedHostHint" />
+        
+        <TextView
+            android:id="@+id/get_started_controller_hint"
+            style="@style/altFontSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"            
+            android:layout_margin="5dp"           
+            android:textStyle="bold"
+            android:gravity="center"
+            android:text="@string/getStartedControllerHint" />
+        
+        <TextView
+            android:id="@+id/get_started_net_hint"
+            style="@style/altFontSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"            
+            android:layout_margin="5dp"           
+            android:textStyle="bold"
+            android:gravity="center"
+            android:text="@string/getStartedNetHint" />
     </LinearLayout>   
 
     <Button
-        android:id="@+id/get_started_button"
+        android:id="@+id/get_started_scan"
         style="@style/altFontMedium"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/get_started_version"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
+        android:layout_height="wrap_content"        
+        android:layout_margin="10dp"
         android:background="@drawable/button_blue"
-        android:text="Get Started" />
+        android:text="Scan for host" />
+    
+    <Button
+        android:id="@+id/get_started_use_current_host"
+        style="@style/altFontMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"       
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/button_blue"
+        android:text="Use current host"
+        android:visibility="gone" />
+    
+    <Button
+        android:id="@+id/get_started_rescan"
+        style="@style/altFontMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"       
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/button_blue"
+        android:text="Rescan for host"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/get_started_version"
         style="@style/mainFontSmall"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
+        android:layout_height="wrap_content"        
+        android:layout_margin="5dp"
         android:text="ver" />
 
-</RelativeLayout>
+</LinearLayout>

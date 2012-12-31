@@ -11,30 +11,26 @@ import android.util.Log;
 
 import com.totsp.embiggen.App;
 
+import java.net.InetSocketAddress;
+
 public class MessageClientService extends Service {
 
    // TODO add methods here so callers can send outgoing messages via the client (through this service)
    // TODO post any incoming messages here to the Bus (so clients don't have to hang off listeners and shit)
-   
+
    private Looper backLooper; // background looper, only used here internally
 
    // TODO private final Bus bus;   
 
    private MessageClient client;
 
-   // Binder given to clients
-   private final IBinder binder = new LocalBinder();
-
-   /**
-    * Class used for the client Binder.  Because we know this service always
-    * runs in the same process as its clients, we don't need to deal with IPC.
-    */
-   public class LocalBinder extends Binder {
+   public class MessageClientServiceLocalBinder extends Binder {
       public MessageClientService getService() {
-         // Return this instance of MessageClientService so clients can call public methods
          return MessageClientService.this;
       }
    }
+
+   private final IBinder binder = new MessageClientServiceLocalBinder();
 
    @Override
    public void onCreate() {
@@ -45,7 +41,7 @@ public class MessageClientService extends Service {
       backLooper = thread.getLooper();
 
       Log.d(App.TAG, "MessageClientService ON CREATE");
-      
+
       // run off of main/UI Thread (service uses same thread as other components by default)
       runOnBackThread(new Runnable() {
          @Override
@@ -82,11 +78,51 @@ public class MessageClientService extends Service {
       return super.onUnbind(intent);
    }
 
+   //
+   // public for bound clients
+   //
+
+   public void restartClient() {
+      runOnBackThread(new Runnable() {
+         @Override
+         public void run() {
+            if (client != null) {
+               client.stop();
+               client.start();
+            }
+         }
+      });
+   }
+
+   // clients can use this to check the discovery status, if not null, host has been discovered
+   public InetSocketAddress getHostInetSocketAddress() {
+      return client.getHostInetSocketAddress();
+   }
+
+   public void sendMessageToHost(final String msg) {
+      if (client != null && client.getHostInetSocketAddress() != null) {
+         runOnBackThread(new Runnable() {
+            @Override
+            public void run() {
+               client.sendMessage(msg);
+            }
+         });
+      } else {
+         Log.e(App.TAG, "Cannot send message, client is null, or has not discovered host");
+      }
+   }
+
+   //
+   // priv
+   //
+
    private synchronized void runOnBackThread(Runnable r) {
       new Handler(backLooper).post(r);
    }
 
+   /*
    private synchronized void runOnMainThread(Runnable r) {
       new Handler(this.getMainLooper()).post(r);
    }
+   */
 }
