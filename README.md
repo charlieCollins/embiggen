@@ -12,6 +12,7 @@ Embiggen has two parts:
 
 See README.md in each sub-project for more info. 
 
+
 Networking notes
 ----------------
 Embiggen uses UDP broadcasts to advertise and discover hosts. (It doesn't use DLNA, intentionally,
@@ -27,3 +28,8 @@ and the controller HTTP server is used for serving content to the host.
 Disclaimer
 ----------
 This project is in the ALPHA stage, there is still a lot to do. 
+
+
+Binaries
+---------
+https://docs.google.com/folder/d/0B1JMWIXokOXsWnQ1dzJ4dHBBc2s/edit
