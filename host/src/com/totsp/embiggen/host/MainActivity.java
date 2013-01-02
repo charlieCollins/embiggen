@@ -1,7 +1,6 @@
 package com.totsp.embiggen.host;
 
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,6 +20,10 @@ import com.totsp.embiggen.host.util.ImageUtil;
  *
  */
 final public class MainActivity extends BaseActivity {
+
+   // TODO improve UI/UX
+   // TODO help/about
+   // TODO preferences for quality settings, etc?
 
    // TODO url/image cache 
    private ImageUtil imageUtil;

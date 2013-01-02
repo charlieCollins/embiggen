@@ -22,7 +22,7 @@
 
         <TextView
             android:id="@+id/footer_text_view"
-            style="@style/mainFontLarge"
+            style="@style/mainFontMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -38,16 +38,8 @@
         android:layout_above="@id/footer_layout"        
         android:gravity="center" >
 
-        <!-- nothing on screen show logo -->
-        <ImageView
-            android:id="@+id/header_image_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="75dp"
-            android:layout_marginTop="20dp"
-            android:src="@drawable/logo" />
+        <!-- nothing on screen (after a video, before anything sent, etc) show ? -->
+       
 
         <!-- the happening now layout -->
         <RelativeLayout

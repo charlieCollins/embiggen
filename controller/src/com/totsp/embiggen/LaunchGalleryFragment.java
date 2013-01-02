@@ -91,7 +91,7 @@ public class LaunchGalleryFragment extends BaseFragment {
          filePath = filePath.replace(" ", "+");
       }
 
-      InetSocketAddress hostAddr = app.getBroadcastClientService().getHostHttpServerInetSocketAddress();
+      InetSocketAddress hostAddr = app.getBroadcastClientService().getHostHttpServerInfo();
       if (hostAddr == null) {
          Log.e(App.TAG, "Cannot send message to host, host not known at this time");
          return;

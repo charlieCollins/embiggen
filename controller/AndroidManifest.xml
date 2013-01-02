@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <!-- for multicast and such need at least 2.3.7? -->
     <uses-sdk android:minSdkVersion="9" />
@@ -24,7 +23,7 @@
         <service android:name="com.totsp.embiggen.broadcastclient.BroadcastClientService" />
 
         <activity
-            android:name="com.totsp.embiggen.GetStartedActivity"
+            android:name="com.totsp.embiggen.StartScanActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.embiggen" >
             <intent-filter>
@@ -38,7 +37,7 @@
             android:theme="@style/Theme.embiggen"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".Preferences"
+            android:name="com.totsp.embiggen.PreferencesActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.embiggen"
             android:windowSoftInputMode="adjustResize" />        

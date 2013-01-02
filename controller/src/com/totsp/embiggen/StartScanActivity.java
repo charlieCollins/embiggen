@@ -20,13 +20,9 @@ import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class GetStartedActivity extends BaseFragmentActivity {
-
-   // TODO need a forgetCurrentHost path once in app (bring users back here?)
+public class StartScanActivity extends BaseFragmentActivity {
 
    // TODO make sure host is discarded if it goes away, poll/check every so often?
-
-   // TODO start scan initially from here, not app 
 
    private Button scan;
    private Button forgetCurrentHost;
@@ -37,7 +33,7 @@ public class GetStartedActivity extends BaseFragmentActivity {
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      setContentView(R.layout.get_started);
+      setContentView(R.layout.startscan_activity);
 
       ActionBar actionBar = getSupportActionBar();
       actionBar.hide();
@@ -54,6 +50,7 @@ public class GetStartedActivity extends BaseFragmentActivity {
       scan.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View v) {
+            app.getBroadcastClientService().startClient();
             startScan();
          }
       });
@@ -62,8 +59,8 @@ public class GetStartedActivity extends BaseFragmentActivity {
       forgetCurrentHost.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View v) {
-            app.getBroadcastClientService().restartClient();
-            updateViews(true);
+            app.getBroadcastClientService().clearHostHttpServerInfo();
+            updateViews();
          }
       });
 
@@ -71,7 +68,12 @@ public class GetStartedActivity extends BaseFragmentActivity {
       useCurrentHost.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View v) {
-            startActivity(new Intent(GetStartedActivity.this, MainActivity.class));
+            if (app.getBroadcastClientService().getHostHttpServerInfo() != null) {
+               startActivity(new Intent(StartScanActivity.this, MainActivity.class));
+            } else {
+               Toast.makeText(StartScanActivity.this, "Error, host is unknown, please scan again", Toast.LENGTH_LONG).show();
+               updateViews();
+            }
          }
       });
    }
@@ -84,18 +86,17 @@ public class GetStartedActivity extends BaseFragmentActivity {
          timer.cancel();
       }
       timer = new Timer();
-      updateViews(false);
+      updateViews();
    }
 
-   private void updateViews(boolean restart) {
+   private void updateViews() {
 
       // based on state we update views, if we have found a host already, show it and allow RESCAN
       // if we have not found a host, show scan 
 
       InetSocketAddress host = null;
-
-      if (!restart && app.getBroadcastClientService() != null) {
-         host = app.getBroadcastClientService().getHostHttpServerInetSocketAddress();
+      if (app.getBroadcastClientService() != null) {
+         host = app.getBroadcastClientService().getHostHttpServerInfo();
       }
 
       if (host != null) {
@@ -124,7 +125,7 @@ public class GetStartedActivity extends BaseFragmentActivity {
    }
 
    protected String getViewName() {
-      return "GetStartedActivity";
+      return "StartScanActivity";
    }
 
    @Override
@@ -137,16 +138,16 @@ public class GetStartedActivity extends BaseFragmentActivity {
 
    private void startScan() {
 
-      // TODO this scanning stuff is a convoluted mess, clena up, and use the bus
+      // TODO this scanning state path stuff is a convoluted mess, clean up
 
       InetSocketAddress host = null;
       if (app.getBroadcastClientService() != null) {
-         host = app.getBroadcastClientService().getHostHttpServerInetSocketAddress();
+         host = app.getBroadcastClientService().getHostHttpServerInfo();
       }
 
       if (host != null) {
          Toast.makeText(this, "Found Embiggen host:" + host.getHostName(), Toast.LENGTH_LONG).show();
-         startActivity(new Intent(GetStartedActivity.this, MainActivity.class));
+         startActivity(new Intent(StartScanActivity.this, MainActivity.class));
       } else {
          // timer, wait on scan for X, display found/not found         
 
@@ -155,19 +156,18 @@ public class GetStartedActivity extends BaseFragmentActivity {
          final TimerTask scanTask = new TimerTask() {
             @Override
             public void run() {
-               GetStartedActivity.this.runOnUiThread(new Runnable() {
+               StartScanActivity.this.runOnUiThread(new Runnable() {
                   public void run() {
-
+                     // NOTE when broadcast client recieves a host, it stops itself (so no need to explict stop here)
                      InetSocketAddress host = null;
-
                      if (app.getBroadcastClientService() != null) {
-                        host = app.getBroadcastClientService().getHostHttpServerInetSocketAddress();
+                        host = app.getBroadcastClientService().getHostHttpServerInfo();
                      }
                      if (host != null) {
                         pd.dismiss();
-                        Toast.makeText(GetStartedActivity.this, "Found Embiggen host:" + host.getHostName(),
+                        Toast.makeText(StartScanActivity.this, "Found Embiggen host:" + host.getHostName(),
                                  Toast.LENGTH_LONG).show();
-                        startActivity(new Intent(GetStartedActivity.this, MainActivity.class));
+                        startActivity(new Intent(StartScanActivity.this, MainActivity.class));
                         cancel();
                      }
                   }
@@ -182,6 +182,7 @@ public class GetStartedActivity extends BaseFragmentActivity {
          pd.setOnCancelListener(new OnCancelListener() {
             public void onCancel(DialogInterface arg) {
                scanTask.cancel();
+               app.getBroadcastClientService().stopClient();
             }
          });
          pd.show();

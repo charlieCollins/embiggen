@@ -14,7 +14,7 @@ import android.preference.PreferenceManager;
 
 import com.totsp.android.util.Screen;
 
-public class Preferences extends PreferenceActivity {
+public class PreferencesActivity extends PreferenceActivity {
 
    private CheckBoxPreference testMode;
    private Preference showScreenInfo;
@@ -24,18 +24,17 @@ public class Preferences extends PreferenceActivity {
    protected void onCreate(final Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
 
-      addPreferencesFromResource(R.layout.preferences);
+      addPreferencesFromResource(R.layout.preferences_activity);
 
       // handle to preferences doesn't come from findViewById!
       testMode = (CheckBoxPreference) getPreferenceScreen().findPreference("testMode");
       showScreenInfo = (Preference) getPreferenceScreen().findPreference("showScreenInfo");
-      galleryBucketSortType = (ListPreference) getPreferenceScreen().findPreference("galleryBucketSortType");
 
       showScreenInfo.setOnPreferenceClickListener(new OnPreferenceClickListener() {
          @Override
          public boolean onPreferenceClick(Preference arg0) {
-            Screen screen = new Screen(Preferences.this);
-            AlertDialog.Builder builder = new AlertDialog.Builder(Preferences.this);
+            Screen screen = new Screen(PreferencesActivity.this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(PreferencesActivity.this);
             builder.setTitle("Screen info summary (debug)").setMessage(screen.summaryText())
                      .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -49,7 +48,6 @@ public class Preferences extends PreferenceActivity {
       });
 
       setCheckboxSummary(testMode);
-      setListSummary(galleryBucketSortType);
 
       // listen to see if user changes pref, so we can update display of current value
       SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -57,9 +55,7 @@ public class Preferences extends PreferenceActivity {
          @Override
          public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
             if (key.equals("testMode")) {
-               setCheckboxSummary(testMode);
-            } else if (key.equals("galleryBucketSortType")) {
-               setListSummary(galleryBucketSortType);
+               setCheckboxSummary(testMode); 
             }
          }
       });

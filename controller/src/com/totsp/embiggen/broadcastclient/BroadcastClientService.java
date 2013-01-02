@@ -6,7 +6,6 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.util.Log;
 
 import com.totsp.embiggen.App;
@@ -47,7 +46,6 @@ public class BroadcastClientService extends Service {
          @Override
          public void run() {
             client = new BroadcastClient(BroadcastClientService.this);
-            client.start(); // don't auto start?
          }
       });
    }
@@ -61,6 +59,7 @@ public class BroadcastClientService extends Service {
          public void run() {
             if (client != null) {
                client.stop();
+               client.clearHostHttpServerInfo();
             }
          }
       });
@@ -81,35 +80,41 @@ public class BroadcastClientService extends Service {
    }
 
    //
-   // public for bound clients
+   // public for bound components
    //
 
-   public void restartClient() {
+   public void startClient() {
+      runOnBackThread(new Runnable() {
+         @Override
+         public void run() {
+            client.start();
+         }
+      });
+   }
+
+   public void stopClient() {
       runOnBackThread(new Runnable() {
          @Override
          public void run() {
             if (client != null) {
                client.stop();
-               client = null;
-            }
-         }
-      });
-
-      SystemClock.sleep(2000);
-
-      runOnBackThread(new Runnable() {
-         @Override
-         public void run() {
-            if (client == null) {
-               client.start();
             }
          }
       });
    }
 
+   public void clearHostHttpServerInfo() {
+      if (client != null) {
+         client.clearHostHttpServerInfo();
+      }
+   }
+
    // clients can use this to check the discovery status, if not null, host has been discovered
-   public InetSocketAddress getHostHttpServerInetSocketAddress() {
-      return client.getHostHttpServerInetSocketAddress();
+   public InetSocketAddress getHostHttpServerInfo() {
+      if (client != null) {
+         return client.getHostHttpServerInfo();
+      }
+      return null;
    }
 
    //

@@ -14,26 +14,16 @@ import com.totsp.embiggen.host.App;
 
 public class BroadcastServerService extends Service {
 
-   // TODO add methods here so callers can send outgoing messages via the server (through this service)
-   // TODO post any incoming messages here to the Bus (so clients don't have to hang off listeners and shit)
-
    private Looper backLooper; // background looper, only used here internally
 
    private BroadcastServer server;
 
-   // Binder given to clients
-   private final IBinder binder = new LocalBinder();
-
-   /**
-    * Class used for the client Binder.  Because we know this service always
-    * runs in the same process as its clients, we don't need to deal with IPC.
-    */
-   public class LocalBinder extends Binder {
+   public class BroadcastServerServiceLocalBinder extends Binder {
       public BroadcastServerService getService() {
-         // Return this instance of BroadcastServerService so clients can call public methods
          return BroadcastServerService.this;
       }
-   }
+   }   
+   private final IBinder binder = new BroadcastServerServiceLocalBinder();
 
    @Override
    public void onCreate() {

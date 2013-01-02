@@ -1,7 +1,6 @@
 package com.totsp.embiggen.broadcastclient;
 
 import android.content.Context;
-import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import com.totsp.embiggen.App;
@@ -33,19 +32,15 @@ public class BroadcastClient {
    public static final int BROADCAST_FIXED_PORT = 8378;
 
    private DatagramSocket broadcastSocket;
-   private final ExecutorService broadcastExecutor;
+   private ExecutorService broadcastExecutor;
    private String hostIpAddress;
    private String hostPort;
 
-   private WifiManager wifiManager;
    private Context context;
 
    public BroadcastClient(Context context) {
       Log.i(App.TAG, "instantiated BroadcastClient");
       this.context = context;
-      wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-
-      broadcastExecutor = Executors.newFixedThreadPool(1);
    }
 
    // NOTE a caller can re-scan by simply calling stop->start
@@ -58,11 +53,15 @@ public class BroadcastClient {
    public void stop() {
       Log.i(App.TAG, "BroadcastClient stop");
       terminateBroadcastClient();
+   }
+
+   public void clearHostHttpServerInfo() {
+      Log.i(App.TAG, "BroadcastClient clearHostHttpServerInfo");
       hostIpAddress = null;
       hostPort = null;
    }
 
-   public InetSocketAddress getHostHttpServerInetSocketAddress() {
+   public InetSocketAddress getHostHttpServerInfo() {
       InetSocketAddress isa = null;
       if (hostIpAddress != null && hostPort != null) {
          try {
@@ -72,6 +71,7 @@ public class BroadcastClient {
             Log.e(App.TAG, "Error getting hostInetAddress", e);
          }
       }
+      Log.i(App.TAG, "BroadcastClient getHostHttpServerInfo:" + isa);
       return isa;
    }
 
@@ -84,7 +84,9 @@ public class BroadcastClient {
       // NOTE tried multicast on Android first, had issues, punted to broadcast 
       // (and our broadcasts are tiny, so hopefully not to annoying to rest of LAN)
 
-      broadcastSocket = null;
+      // make sure all is shut down first (approp checks are in terminate)
+      terminateBroadcastClient();
+      
       try {
          broadcastSocket = new DatagramSocket(BROADCAST_FIXED_PORT);
       } catch (SocketException e) {
@@ -92,33 +94,32 @@ public class BroadcastClient {
          return;
       }
 
-      //broadcastSocket.setBroadcast(true); don't send broadcast here, just receive
-      Log.i(App.TAG, "BroadcastClient broadcast socket listening");
-
+      broadcastExecutor = Executors.newFixedThreadPool(1);
       // don't need to loop here, broadcastSocket.receive is blocking
-      if (!broadcastExecutor.isShutdown()) {
-         try {
-            broadcastExecutor.submit(new BroadcastHandler(broadcastSocket));
-         } catch (SocketException e) {
-            e.printStackTrace();
-         }
+      try {
+         broadcastExecutor.submit(new BroadcastHandler(broadcastSocket));
+         Log.i(App.TAG, "BroadcastClient broadcast socket listening");
+      } catch (SocketException e) {
+         Log.e(App.TAG, "Error with broadcast socket", e);
       }
    }
 
    private void terminateBroadcastClient() {
-      Log.d(App.TAG, "terminateBroadcastClient");
 
-      if (broadcastSocket != null && broadcastSocket.isBound()) {
+      if (broadcastSocket != null) {
          broadcastSocket.close();
       }
 
-      broadcastExecutor.shutdown();
-      try {
-         broadcastExecutor.awaitTermination(10, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-         Log.e(App.TAG, "Error stopping broadcast client:" + e.getMessage(), e);
+      if (broadcastExecutor != null) {
+         broadcastExecutor.shutdown();
+         try {
+            broadcastExecutor.awaitTermination(5, TimeUnit.SECONDS);
+         } catch (InterruptedException e) {
+            Log.e(App.TAG, "Error stopping broadcast client:" + e.getMessage(), e);
+         }
+         broadcastExecutor.shutdownNow();
+         broadcastExecutor = null;
       }
-      broadcastExecutor.shutdownNow();
    }
 
    //
@@ -153,15 +154,14 @@ public class BroadcastClient {
                if (hostIpAddress != null && hostPort != null) {
                   Log.e(App.TAG, "BroadcastClient got host data from broadcast host:" + hostIpAddress + " port:"
                            + hostPort);
-                  terminateBroadcastClient();
+                  // NOTE once a host broadcast is received the broadcast client STOPS ITSELF (but does not clear just found host info)
+                  stop();
                }
             }
 
          } catch (IOException e) {
             Log.e(App.TAG, "Broadcast socket error (expected after socket is closed intentionally):" + e.getMessage());
-         }
-
-         finally {
+         } finally {
             if (socket != null) {
                socket.close();
             }

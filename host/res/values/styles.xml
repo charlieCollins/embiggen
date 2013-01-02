@@ -1,35 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="mainFontExtraLarge" parent="@android:style/TextAppearance.Large">
-        <item name="android:textColor">#d7d7d7</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">@dimen/fsFontExtraLarge</item>
-    </style>
-
-    <style name="mainFontLarge" parent="@android:style/TextAppearance.Large">
-        <item name="android:textColor">#d7d7d7</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">@dimen/fsFontLarge</item>
-    </style>
-
-    <style name="mainFontMedium" parent="@android:style/TextAppearance.Medium">
-        <item name="android:textColor">#d7d7d7</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">@dimen/fsFontMedium</item>
-    </style>
-
-    <style name="mainFontSmall" parent="@android:style/TextAppearance.Small">
-        <item name="android:textColor">#d7d7d7</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">@dimen/fsFontSmall</item>
-    </style>
     
-    <style name="mainFontTiny" parent="@android:style/TextAppearance.Small">
-        <item name="android:textColor">#d7d7d7</item>
-        <item name="android:textStyle">normal</item>
-        <item name="android:textSize">@dimen/fsFontTiny</item>
-    </style>
 
     <style name="chatDialog" parent="@android:style/Theme.Translucent.NoTitleBar">
         <item name="android:windowIsFloating">true</item>
