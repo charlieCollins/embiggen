@@ -19,9 +19,9 @@ and it doesn't use multicast because it has been shown to have difficulties on v
 The discovery is very simple. 
 
 Once a host and controller are aware of each other the controller tells the host what to display using HTTP. 
-Both the host and controller run a simple HTTP server (see sub-project). The host HTTP server is used
-only for messaging (for controllers to be able to tell the host what to do), and the controller HTTP server
-is used for serving content to the host. 
+Both the host and controller run a simple HTTP server (see related charlieCollins/android-http-servers). 
+The host HTTP server is used only for messaging (for controllers to be able to tell the host what to do), 
+and the controller HTTP server is used for serving content to the host. 
 
 
 Disclaimer
