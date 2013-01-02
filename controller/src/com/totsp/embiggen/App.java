@@ -16,10 +16,11 @@ import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.Tracker;
 import com.squareup.otto.Bus;
 import com.totsp.android.util.Installation;
-import com.totsp.embiggen.messageclient.MessageClientService;
-import com.totsp.embiggen.messageclient.MessageClientService.MessageClientServiceLocalBinder;
+import com.totsp.embiggen.broadcastclient.BroadcastClientService;
+import com.totsp.embiggen.broadcastclient.BroadcastClientService.BroadcastClientServiceLocalBinder;
 import com.totsp.embiggen.util.RuntimeLoader;
 import com.totsp.server.HTTPServerService;
+import com.totsp.server.HTTPServerService.HTTPServerServiceLocalBinder;
 
 public class App extends Application {
 
@@ -32,12 +33,15 @@ public class App extends Application {
 
    private ConnectivityManager cMgr;
 
+   private static final String HTTP_SERVER_USER_AGENT = "Embiggen-Controller-HTTPD";
+   public static final int HTTP_SERVER_PORT = 8999;
    private ServiceConnection httpServerServiceConnection;
    private boolean httpServerServiceBound;
+   private HTTPServerService httpServerService;
 
-   private ServiceConnection messageClientServiceConnection;
-   private boolean messageClientServiceBound;
-   private MessageClientService messageClientService;
+   private ServiceConnection broadcastClientServiceConnection;
+   private boolean broadcastClientServiceBound;
+   private BroadcastClientService broadcastClientService;
 
    private Tracker gaTracker;
 
@@ -65,10 +69,13 @@ public class App extends Application {
       prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
       cMgr = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-      
+
       httpServerServiceConnection = new ServiceConnection() {
          @Override
-         public void onServiceConnected(ComponentName className, IBinder binder) {            
+         public void onServiceConnected(ComponentName className, IBinder binder) {
+            HTTPServerServiceLocalBinder localBinder = (HTTPServerServiceLocalBinder) binder;
+            httpServerService = localBinder.getService();
+            httpServerService.startServer(HTTP_SERVER_USER_AGENT, HTTP_SERVER_PORT, 3, null);
             httpServerServiceBound = true;
             Log.i(App.TAG, "http service connected");
          }
@@ -78,28 +85,28 @@ public class App extends Application {
             httpServerServiceBound = false;
             Log.i(App.TAG, "http service disconnected");
          }
-      };    
+      };
       Log.i(App.TAG, "calling bind http service");
-      bindService(new Intent(this, HTTPServerService.class), httpServerServiceConnection, Context.BIND_AUTO_CREATE);       
+      bindService(new Intent(this, HTTPServerService.class), httpServerServiceConnection, Context.BIND_AUTO_CREATE);
 
-      messageClientServiceConnection = new ServiceConnection() {
+      broadcastClientServiceConnection = new ServiceConnection() {
          @Override
-         public void onServiceConnected(ComponentName className, IBinder binder) {            
-            MessageClientServiceLocalBinder localBinder = (MessageClientServiceLocalBinder) binder;
-            messageClientService = localBinder.getService();             
-            messageClientServiceBound = true;
-            Log.i(App.TAG, "socket service connected");
+         public void onServiceConnected(ComponentName className, IBinder binder) {
+            BroadcastClientServiceLocalBinder localBinder = (BroadcastClientServiceLocalBinder) binder;
+            broadcastClientService = localBinder.getService();
+            broadcastClientServiceBound = true;
+            Log.i(App.TAG, "broadcast service connected");
          }
 
          @Override
          public void onServiceDisconnected(ComponentName comp) {
-            messageClientServiceBound = false;
-            messageClientService = null;
-            Log.i(App.TAG, "socket service disconnected");
+            broadcastClientServiceBound = false;
+            broadcastClientService = null;
+            Log.i(App.TAG, "broadcast service disconnected");
          }
       };
       Log.i(App.TAG, "calling bind socket service");
-      bindService(new Intent(this, MessageClientService.class), messageClientServiceConnection,
+      bindService(new Intent(this, BroadcastClientService.class), broadcastClientServiceConnection,
                Context.BIND_AUTO_CREATE);
 
       String gaId = runtimeLoader.getGoogleAnalyticsId();
@@ -129,9 +136,9 @@ public class App extends Application {
          httpServerServiceBound = false;
       }
 
-      if (messageClientServiceBound) {
-         unbindService(messageClientServiceConnection);
-         messageClientServiceBound = false;
+      if (broadcastClientServiceBound) {
+         unbindService(broadcastClientServiceConnection);
+         broadcastClientServiceBound = false;
       }
 
       bus.unregister(this);
@@ -139,22 +146,7 @@ public class App extends Application {
       if (gaTracker != null) {
          gaTracker.close();
       }
-   }
-
-   public SharedPreferences getPrefs() {
-      return this.prefs;
-   }
-
-   public String getInstallationId() {
-      return Installation.id(this);
-   }
-   
-   //
-   // message client
-   //
-   public MessageClientService getMessageClientService() {
-      return this.messageClientService;
-   }
+   }  
 
    //
    // ga
@@ -170,5 +162,22 @@ public class App extends Application {
       if (gaTracker != null) {
          gaTracker.trackEvent(category, action, label, null);
       }
+   }
+   
+   //
+   // accessors
+   //
+   
+   public SharedPreferences getPrefs() {
+      return this.prefs;
+   }
+
+   public String getInstallationId() {
+      return Installation.id(this);
+   }
+   
+   // TODO don't expose entire service via app?
+   public BroadcastClientService getBroadcastClientService() {
+      return this.broadcastClientService;
    }
 }

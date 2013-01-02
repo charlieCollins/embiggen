@@ -22,8 +22,8 @@
         android:name=".App"
         android:icon="@drawable/icon"
         android:label="Embiggen" >
-        
-        <service android:name="com.totsp.embiggen.host.messageserver.MessageServerService" />
+        <service android:name="com.totsp.server.HTTPServerService" />
+        <service android:name="com.totsp.embiggen.host.broadcastserver.BroadcastServerService" />
         
         <activity
             android:name=".MainActivity"

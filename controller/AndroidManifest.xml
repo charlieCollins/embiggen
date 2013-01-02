@@ -21,7 +21,7 @@
         android:label="Embiggen"
         android:theme="@style/Theme.embiggen" >
         <service android:name="com.totsp.server.HTTPServerService" />
-        <service android:name="com.totsp.embiggen.messageclient.MessageClientService" />
+        <service android:name="com.totsp.embiggen.broadcastclient.BroadcastClientService" />
 
         <activity
             android:name="com.totsp.embiggen.GetStartedActivity"

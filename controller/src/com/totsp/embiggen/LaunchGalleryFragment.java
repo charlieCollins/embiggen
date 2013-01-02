@@ -22,7 +22,11 @@ import android.widget.ImageView;
 import com.totsp.android.util.NetworkUtil;
 import com.totsp.embiggen.component.crouton.Crouton;
 import com.totsp.embiggen.component.crouton.Style;
-import com.totsp.server.HTTPServerService;
+import com.totsp.server.util.SimpleHttpClient;
+
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
+import java.net.URLEncoder;
 
 public class LaunchGalleryFragment extends BaseFragment {
 
@@ -87,16 +91,36 @@ public class LaunchGalleryFragment extends BaseFragment {
          filePath = filePath.replace(" ", "+");
       }
 
-      String url =
+      InetSocketAddress hostAddr = app.getBroadcastClientService().getHostHttpServerInetSocketAddress();
+      if (hostAddr == null) {
+         Log.e(App.TAG, "Cannot send message to host, host not known at this time");
+         return;
+      }
+
+      String localUrl =
                "http://"
                         + NetworkUtil.getWifiIpAddress((WifiManager) getActivity().getSystemService(
-                                 Context.WIFI_SERVICE)) + ":" + HTTPServerService.PORT + filePath;
+                                 Context.WIFI_SERVICE)) + ":" + App.HTTP_SERVER_PORT + filePath;
+      try {
+         localUrl = URLEncoder.encode(localUrl, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+         // ignore?
+      }
+
+      final String urlToSendMessageToHost =
+               "http://" + hostAddr.getHostName() + ":" + hostAddr.getPort() + "?DISPLAY_MEDIA=" + localUrl;
 
       Log.d(App.TAG, "sendChoiceToHost filePath:" + filePath);
-      Log.d(App.TAG, "sendChoiceToHost serving URL:" + url);
+      Log.d(App.TAG, "sendChoiceToHost invoking URL:" + urlToSendMessageToHost);
 
-      // send DISPLAY_MEDIA message to host
-      app.getMessageClientService().sendMessageToHost("DISPLAY_MEDIA~" + url);
+      // send DISPLAY_MEDIA message to host via HTTP
+      // NOTE gotta use real URLs now, but that's not so bad ;)
+      new Thread() {
+         public void run() {
+            // don't care about response, this is just to send msg to server
+            SimpleHttpClient.get(urlToSendMessageToHost);
+         }
+      }.start();
    }
 
    //

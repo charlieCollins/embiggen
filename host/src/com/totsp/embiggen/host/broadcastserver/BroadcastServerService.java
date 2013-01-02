@@ -1,4 +1,4 @@
-package com.totsp.embiggen.host.messageserver;
+package com.totsp.embiggen.host.broadcastserver;
 
 import android.app.Service;
 import android.content.Intent;
@@ -7,19 +7,19 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 
+import com.squareup.otto.Bus;
 import com.totsp.embiggen.host.App;
 
-import java.util.Random;
-
-public class MessageServerService extends Service {
+public class BroadcastServerService extends Service {
 
    // TODO add methods here so callers can send outgoing messages via the server (through this service)
    // TODO post any incoming messages here to the Bus (so clients don't have to hang off listeners and shit)
-   
+
    private Looper backLooper; // background looper, only used here internally
 
-   private MessageServer server;
+   private BroadcastServer server;
 
    // Binder given to clients
    private final IBinder binder = new LocalBinder();
@@ -29,65 +29,69 @@ public class MessageServerService extends Service {
     * runs in the same process as its clients, we don't need to deal with IPC.
     */
    public class LocalBinder extends Binder {
-      public MessageServerService getService() {
-         // Return this instance of MessageServerService so clients can call public methods
-         return MessageServerService.this;
+      public BroadcastServerService getService() {
+         // Return this instance of BroadcastServerService so clients can call public methods
+         return BroadcastServerService.this;
       }
    }
 
    @Override
    public void onCreate() {
       super.onCreate();
-      
+
       HandlerThread thread = new HandlerThread("BackLooper", Thread.NORM_PRIORITY);
       thread.start();
       backLooper = thread.getLooper();
 
-      // 8378 is the FIXED broadcast port, so range regular socket server 8379-8399
-      // TODO check if ports selected are in use on same device/LAN (right now just assumes they aren't)
-      Random rand = new Random();
-      final int port = rand.nextInt(8399 - 8378 + 1) + 8378;
-      
-      System.out.println("MessageServerService ON CREATE, random port:" + port);
-      
+      Log.i(App.TAG, "BroadcastServerService onCreate");
+
       final App app = (App) this.getApplication();
-      
-      // run off of main/UI Thread (service uses same thread as other components by default)
-      runOnBackThread(new Runnable() {
-         @Override
-         public void run() {
-            server = new MessageServer(MessageServerService.this, app.getBus());
-            server.start(port);
-         }
-      });
+      startServer(app.getBus(), app.getHttpServerPort());
    }
 
    @Override
    public void onDestroy() {
       super.onDestroy();
-      
-      runOnBackThread(new Runnable() {
-         @Override
-         public void run() {
-            if (server != null) {
-               server.stop();
-            }
-         }
-      });
+      stopServer();
    }
 
    @Override
    public IBinder onBind(Intent intent) {
-      //Log.d(Constants.LOG_TAG, "MessageServerService BOUND");
+      //Log.d(Constants.LOG_TAG, "BroadcastServerService BOUND");
       return binder;
    }
 
    @Override
    public boolean onUnbind(Intent intent) {
-      //Log.d(Constants.LOG_TAG, "MessageServerService UN-BOUND");
+      //Log.d(Constants.LOG_TAG, "BroadcastServerService UN-BOUND");
       return super.onUnbind(intent);
    }
-   
+
+   private void startServer(final Bus bus, final int port) {
+      runOnBackThread(new Runnable() {
+         @Override
+         public void run() {
+            if (server != null) {
+               stopServer();
+            }
+            server = new BroadcastServer(BroadcastServerService.this, bus);
+            server.start(port);
+         }
+      });
+   }
+
+   private void stopServer() {
+      runOnBackThread(new Runnable() {
+         @Override
+         public void run() {
+            if (server != null) {
+               server.stop();
+               server = null;
+            }
+         }
+      });
+   }
+
    private synchronized void runOnBackThread(Runnable r) {
       new Handler(backLooper).post(r);
    }

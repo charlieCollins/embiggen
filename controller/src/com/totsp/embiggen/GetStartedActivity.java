@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,9 +23,9 @@ import java.util.TimerTask;
 public class GetStartedActivity extends BaseFragmentActivity {
 
    // TODO need a forgetCurrentHost path once in app (bring users back here?)
-   
+
    // TODO make sure host is discarded if it goes away, poll/check every so often?
-   
+
    // TODO start scan initially from here, not app 
 
    private Button scan;
@@ -63,7 +62,7 @@ public class GetStartedActivity extends BaseFragmentActivity {
       forgetCurrentHost.setOnClickListener(new OnClickListener() {
          @Override
          public void onClick(View v) {
-            app.getMessageClientService().restartClient(); 
+            app.getBroadcastClientService().restartClient();
             updateViews(true);
          }
       });
@@ -74,7 +73,7 @@ public class GetStartedActivity extends BaseFragmentActivity {
          public void onClick(View v) {
             startActivity(new Intent(GetStartedActivity.this, MainActivity.class));
          }
-      });      
+      });
    }
 
    @Override
@@ -95,8 +94,8 @@ public class GetStartedActivity extends BaseFragmentActivity {
 
       InetSocketAddress host = null;
 
-      if (!restart && app.getMessageClientService() != null) {
-         host = app.getMessageClientService().getHostInetSocketAddress();
+      if (!restart && app.getBroadcastClientService() != null) {
+         host = app.getBroadcastClientService().getHostHttpServerInetSocketAddress();
       }
 
       if (host != null) {
@@ -139,10 +138,10 @@ public class GetStartedActivity extends BaseFragmentActivity {
    private void startScan() {
 
       // TODO this scanning stuff is a convoluted mess, clena up, and use the bus
-      
+
       InetSocketAddress host = null;
-      if (app.getMessageClientService() != null) {
-         host = app.getMessageClientService().getHostInetSocketAddress();
+      if (app.getBroadcastClientService() != null) {
+         host = app.getBroadcastClientService().getHostHttpServerInetSocketAddress();
       }
 
       if (host != null) {
@@ -161,8 +160,8 @@ public class GetStartedActivity extends BaseFragmentActivity {
 
                      InetSocketAddress host = null;
 
-                     if (app.getMessageClientService() != null) {
-                        host = app.getMessageClientService().getHostInetSocketAddress();
+                     if (app.getBroadcastClientService() != null) {
+                        host = app.getBroadcastClientService().getHostHttpServerInetSocketAddress();
                      }
                      if (host != null) {
                         pd.dismiss();

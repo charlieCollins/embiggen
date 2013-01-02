@@ -42,7 +42,7 @@ public abstract class BaseActivity extends Activity {
    @Override
    protected void onResume() {
       super.onResume();
-      app.bus.register(this);
+      app.getBus().register(this);
    }
 
    protected abstract String getViewName();
@@ -53,7 +53,7 @@ public abstract class BaseActivity extends Activity {
       if (dialog != null) {
          dialog.dismiss();
       }
-      app.bus.unregister(this);
+      app.getBus().unregister(this);
    }
 
    @Override
@@ -89,110 +89,4 @@ public abstract class BaseActivity extends Activity {
          finish();
       }
    }
-
-   //
-   // MOVLConnect empty callback events (so subclasses can override what they need)
-   //
-   /*
-      @Override
-      public void onConnectionLost(final IMCResult res) {
-         this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-               if (dialog.isShowing()) {
-                  dialog.dismiss();
-               }
-               Toast.makeText(BaseActivity.this, "Connection lost", Toast.LENGTH_SHORT).show();
-               backToStart(false, true);
-            }
-         });
-      }
-
-      @Override
-      public void onError(final IMCResult res) {
-         this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-               if (dialog.isShowing()) {
-                  dialog.dismiss();
-               }
-               Toast.makeText(BaseActivity.this, "ERROR:" + res.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-         });
-      }
-
-      @Override
-      public void onCreateRoom(IMCResult result, IMCRoom room) {
-      }
-
-      @Override
-      public void onJoinRoom(IMCResult result, IMCRoom room) {
-      }
-
-      @Override
-      public void onLeaveRoom(IMCResult result) {
-         this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-               if (dialog.isShowing()) {
-                  dialog.dismiss();
-               }
-               backToStart(false, true);
-            }
-         });
-      }
-
-      @Override
-      public void onDiscoverLocalRoomInfo(MCRoomInfoCollection arg0) {
-      }
-
-      @Override
-      public void onGetRoomInfo(MCRoomInfoCollection arg0) {
-      }
-      
-      @Override
-      public void onGetAppStatus(MCAppStatus arg0) {
-      }
-
-      @Override
-      public void onUserJoined(final IMCUser user) {
-      }
-
-      @Override
-      public void onUserLeft(final IMCUser user) {
-      }
-
-      @Override
-      public void onMessage(final IMCUser sender, final String messageId, final MCData messageData, final String target) {
-      }
-
-      @Override
-      public void onEjected(IMCUser sender, String reason) {
-      }
-
-      @Override
-      public void onActiveHostChanged(IMCUser activeHost) {
-      }
-
-      @Override
-      public void onRoomAttributesChanged(List<String> keys) {
-      }
-
-      @Override
-      public void onUserAttributesChanged(IMCUser user, List<String> keys) {
-      }
-
-      @Override
-      public void onShutdownRoom() {
-      }
-
-      @Override
-      public void onPing(long start, long end, long length) {
-      }
-
-      @Override
-      public void onSystemBroadcast(String id, String message) {
-      }
-      */
-
 }

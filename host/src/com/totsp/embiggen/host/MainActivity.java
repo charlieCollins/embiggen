@@ -50,6 +50,7 @@ final public class MainActivity extends BaseActivity {
    @Override
    protected void onStart() {
       super.onStart();
+      app.getBus().register(this);
       //Log.i(MainActivity.class.getSimpleName(), "in onStart(); haveNetwork is " + haveNetwork);
       //IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
       //registerReceiver(networkStateReceiver, filter);
@@ -58,6 +59,7 @@ final public class MainActivity extends BaseActivity {
    @Override
    protected void onPause() {
       super.onPause();
+      app.getBus().unregister(this);
    }
 
    @Override

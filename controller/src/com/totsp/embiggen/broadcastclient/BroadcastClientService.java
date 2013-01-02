@@ -1,4 +1,4 @@
-package com.totsp.embiggen.messageclient;
+package com.totsp.embiggen.broadcastclient;
 
 import android.app.Service;
 import android.content.Intent;
@@ -6,33 +6,32 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.totsp.embiggen.App;
 
 import java.net.InetSocketAddress;
 
-public class MessageClientService extends Service {
+public class BroadcastClientService extends Service {
 
    // TODO add methods here so callers can send outgoing messages via the client (through this service)
    // TODO post any incoming messages here to the Bus (so clients don't have to hang off listeners and shit)
 
-   // TDOO investigate HandlerThread and back looper more, doesn't always post?
-   // also keep in mind MessageClient has executors?
    private HandlerThread backThread; // background looper, only used here internally
    private Handler backHandler;
 
    // TODO private final Bus bus;   
 
-   private MessageClient client;
+   private BroadcastClient client;
 
-   public class MessageClientServiceLocalBinder extends Binder {
-      public MessageClientService getService() {
-         return MessageClientService.this;
+   public class BroadcastClientServiceLocalBinder extends Binder {
+      public BroadcastClientService getService() {
+         return BroadcastClientService.this;
       }
    }
 
-   private final IBinder binder = new MessageClientServiceLocalBinder();
+   private final IBinder binder = new BroadcastClientServiceLocalBinder();
 
    @Override
    public void onCreate() {
@@ -42,12 +41,12 @@ public class MessageClientService extends Service {
       backThread.start();
       backHandler = new Handler(backThread.getLooper());
 
-      Log.d(App.TAG, "MessageClientService ON CREATE");
+      Log.d(App.TAG, "BroadcastClientService ON CREATE");
 
       runOnBackThread(new Runnable() {
          @Override
          public void run() {
-            client = new MessageClient(MessageClientService.this);
+            client = new BroadcastClient(BroadcastClientService.this);
             client.start(); // don't auto start?
          }
       });
@@ -71,13 +70,13 @@ public class MessageClientService extends Service {
 
    @Override
    public IBinder onBind(Intent intent) {
-      Log.d(App.TAG, "MessageClientService BOUND");
+      Log.d(App.TAG, "BroadcastClientService BOUND");
       return binder;
    }
 
    @Override
    public boolean onUnbind(Intent intent) {
-      Log.d(App.TAG, "MessageClientService UN-BOUND");
+      Log.d(App.TAG, "BroadcastClientService UN-BOUND");
       return super.onUnbind(intent);
    }
 
@@ -91,6 +90,17 @@ public class MessageClientService extends Service {
          public void run() {
             if (client != null) {
                client.stop();
+               client = null;
+            }
+         }
+      });
+
+      SystemClock.sleep(2000);
+
+      runOnBackThread(new Runnable() {
+         @Override
+         public void run() {
+            if (client == null) {
                client.start();
             }
          }
@@ -98,21 +108,8 @@ public class MessageClientService extends Service {
    }
 
    // clients can use this to check the discovery status, if not null, host has been discovered
-   public InetSocketAddress getHostInetSocketAddress() {
-      return client.getHostInetSocketAddress();
-   }
-
-   public void sendMessageToHost(final String msg) {
-      runOnBackThread(new Runnable() {
-         @Override
-         public void run() {
-            if (client != null && client.getHostInetSocketAddress() != null) {
-               client.sendMessage(msg);
-            } else {
-               Log.e(App.TAG, "Cannot send message, client is null, or has not discovered host");
-            }
-         }
-      });
+   public InetSocketAddress getHostHttpServerInetSocketAddress() {
+      return client.getHostHttpServerInetSocketAddress();
    }
 
    //
