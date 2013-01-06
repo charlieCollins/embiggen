@@ -1,16 +1,21 @@
 Embiggen
 =========
 
-Android app(s) for sharing content (pics, videos) from one or more "controllers" to a "host."
+*Verb*
+**_1. (rare, nonstandard) To enlarge or grow; to make or become bigger_**
 
-The big idea with Embiggen is that you share photos and videos with a group
-by sending them from your phone to a larger screen device (a big tablet, or Google TV, etc). 
+Android app for sharing content (pics, videos) from a small screen to a larger one.
+
+The *big* idea with Embiggen is that you share photos and videos with a group
+by sending them from your phone/mobile to a larger screen device (a large tablet, or Google TV). 
 
 Embiggen has two parts:   
-1. HOST - The Host app sits around waiting for requests to show stuff, it runs on the BIG screen.   
-2. CONTROLLER - The controller app runs on your phone/tablet and sends content to the host. 
+1. HOST - Runs on the LARGE screen device and shows stuff.   
+2. CONTROLLER - Runs on the SMALL screen and sends stuff to the host to embiggen it! 
 
-See README.md in each sub-project for more info. 
+Typically there is one host and one or more controllers (multiple controllers can send stuff to the same host).
+
+See README.md in each sub-project for more info on the host and controllers. 
 
 
 Networking notes
