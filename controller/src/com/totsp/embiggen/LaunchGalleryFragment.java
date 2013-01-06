@@ -165,15 +165,38 @@ public class LaunchGalleryFragment extends BaseFragment {
          Log.d(App.TAG, "GetImageFilePathTask returned:" + result);
          if (result != null) {
 
-            BitmapFactory.Options o = new BitmapFactory.Options();
-            o.inTempStorage = new byte[16 * 1024];
-            Bitmap selectedImage = BitmapFactory.decodeFile(result);
-            selectedThumbnail.setImageBitmap(selectedImage);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(result, options);
+            int height = options.outHeight;
+            int width = options.outWidth;
+            //String imageType = options.outMimeType;
+            options.inSampleSize = calculateInSampleSize(options, width, height);
 
+            options.inJustDecodeBounds = false;
+            Bitmap bitmap = BitmapFactory.decodeFile(result, options);
+            selectedThumbnail.setImageBitmap(bitmap);            
+            
             Crouton.makeText(getActivity(), "Sent selected item to host", Style.INFO).show();
 
             sendChoiceToHost(result);
          }
       }
+   }
+
+   private static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+      // Raw height and width of image
+      final int height = options.outHeight;
+      final int width = options.outWidth;
+      int inSampleSize = 1;
+
+      if (height > reqHeight || width > reqWidth) {
+         if (width > height) {
+            inSampleSize = Math.round((float) height / (float) reqHeight);
+         } else {
+            inSampleSize = Math.round((float) width / (float) reqWidth);
+         }
+      }
+      return inSampleSize;
    }
 }

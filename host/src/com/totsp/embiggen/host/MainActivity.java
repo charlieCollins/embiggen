@@ -1,19 +1,17 @@
 package com.totsp.embiggen.host;
 
-import android.content.BroadcastReceiver;
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.ProgressBar;
 import android.widget.VideoView;
-import android.widget.ViewSwitcher;
 
+import com.koushikdutta.urlimageviewhelper.UrlImageViewCallback;
+import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 import com.squareup.otto.Subscribe;
 import com.totsp.embiggen.host.event.DisplayMediaEvent;
-import com.totsp.embiggen.host.util.ImageUtil;
 
 /**
  * The Embiggen host.
@@ -25,56 +23,22 @@ final public class MainActivity extends BaseActivity {
    // TODO help/about
    // TODO preferences for quality settings, etc?
 
-   // TODO url/image cache 
-   private ImageUtil imageUtil;
-
-   private ViewSwitcher switcher;
-   private RelativeLayout shareLayout;
+   private ImageView logoImageView;
+   private ProgressBar loaderProgressBar;
    private ImageView shareImageView;
    private VideoView shareVideoView;
 
-   private BroadcastReceiver networkStateReceiver;
-
-   // TODO check network state, and network state listener
+   // TODO network state receiver in App
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
 
-      imageUtil = new ImageUtil(this);
-
-      switcher = (ViewSwitcher) findViewById(R.id.switcher);
-      shareLayout = (RelativeLayout) findViewById(R.id.share_layout);
+      logoImageView = (ImageView) findViewById(R.id.logo_image_view);
+      loaderProgressBar = (ProgressBar) findViewById(R.id.footer_progress_bar);
       shareImageView = (ImageView) findViewById(R.id.share_image_view);
-      //shareVideoView = (VideoView) findViewById(R.id.share_video_view);
-   }
-
-   @Override
-   protected void onStart() {
-      super.onStart();
-      app.getBus().register(this);
-      //Log.i(MainActivity.class.getSimpleName(), "in onStart(); haveNetwork is " + haveNetwork);
-      //IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-      //registerReceiver(networkStateReceiver, filter);
-   }
-
-   @Override
-   protected void onPause() {
-      super.onPause();
-      app.getBus().unregister(this);
-   }
-
-   @Override
-   protected void onStop() {
-      //unregisterReceiver(networkStateReceiver);
-      //haveNetwork = Optional.absent();
-      super.onStop();
-   }
-
-   @Override
-   protected void onDestroy() {
-      super.onDestroy();
+      shareVideoView = (VideoView) findViewById(R.id.share_video_view);
    }
 
    @Override
@@ -86,17 +50,25 @@ final public class MainActivity extends BaseActivity {
    // subscriptions
    //
 
+   // TODO add displayMediaSlideShow or such (allow slideshows)
+
    @Subscribe
    public void displayMedia(DisplayMediaEvent e) {
       Log.d(App.TAG, "MainActivity caught display media event:" + e);
 
-      View nextView = switcher.getNextView();
-      // RelativeLayout is the layout with ImageView/VideoView
-      // (and other option on switcher is just ImageView, which is logo when nothing is playing/shown)
-      if (nextView instanceof RelativeLayout) {
-         switcher.showNext();
-      }
-      new GetImageTask().execute(e.getUrlString());
+      logoImageView.setVisibility(View.GONE);
+
+      // TODO determine if video or image, etc (now assume image)      
+      shareVideoView.setVisibility(View.GONE);
+      shareImageView.setVisibility(View.VISIBLE);
+
+      loaderProgressBar.setVisibility(View.VISIBLE);
+      UrlImageViewHelper.setUrlDrawable(shareImageView, e.getUrlString(), new UrlImageViewCallback() {
+         @Override
+         public void onLoaded(ImageView imageView, Drawable loadedDrawable, String url, boolean loadedFromCache) {
+            loaderProgressBar.setVisibility(View.INVISIBLE);
+         }
+      });
    }
 
    //
@@ -111,6 +83,7 @@ final public class MainActivity extends BaseActivity {
    // tasks
    //
 
+   /*
    private class GetImageTask extends AsyncTask<String, Void, Bitmap> {
 
       public GetImageTask() {
@@ -130,4 +103,5 @@ final public class MainActivity extends BaseActivity {
          shareImageView.setImageBitmap(result);
       }
    }
+   */
 }

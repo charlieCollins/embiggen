@@ -166,7 +166,7 @@ public class BroadcastServer {
                }
             }
          });
-         Log.v(App.TAG, "   sent broadcast:" + msg);
+         ///Log.v(App.TAG, "   sent broadcast:" + msg);
       }
    }
 
