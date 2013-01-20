@@ -166,7 +166,6 @@ public final class DiskLruCache implements Closeable {
 
     /* XXX From libcore.io.Streams */
     private static String readAsciiLine(InputStream in) throws IOException {
-        // TODO: support UTF-8 here instead
 
         StringBuilder result = new StringBuilder(80);
         while (true) {

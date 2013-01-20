@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Small plain Java message BroadcastClient for discovery via plain broadcast socket on Android (UDP). 
  *  
  * NOTE: Format of the discovery message is as follows:
- * EMBIGGEN_HOST~1.2.3.4:1234
+ * EMBIGGEN_HOST~INSTALL_ID~1.2.3.4~1234
  * 
  * @author ccollins
  *
@@ -30,9 +31,12 @@ public class BroadcastClient {
 
    public static final String BROADCAST_NET = "255.255.255.255";
    public static final int BROADCAST_FIXED_PORT = 8378;
+   private static final String DELIMITER = "~";
 
    private DatagramSocket broadcastSocket;
    private ExecutorService broadcastExecutor;
+
+   private String hostId; // unique id, and shown on host screen, so user can say "yes/no" for found hosts
    private String hostIpAddress;
    private String hostPort;
 
@@ -57,11 +61,12 @@ public class BroadcastClient {
 
    public void clearHostHttpServerInfo() {
       Log.i(App.TAG, "BroadcastClient clearHostHttpServerInfo");
+      hostId = null;
       hostIpAddress = null;
       hostPort = null;
-   }
+   }   
 
-   public InetSocketAddress getHostHttpServerInfo() {
+   public HostHttpServerInfo getHostHttpServerInfo() {
       InetSocketAddress isa = null;
       if (hostIpAddress != null && hostPort != null) {
          try {
@@ -72,7 +77,7 @@ public class BroadcastClient {
          }
       }
       Log.i(App.TAG, "BroadcastClient getHostHttpServerInfo:" + isa);
-      return isa;
+      return new HostHttpServerInfo(isa, hostId);
    }
 
    //
@@ -86,7 +91,7 @@ public class BroadcastClient {
 
       // make sure all is shut down first (approp checks are in terminate)
       terminateBroadcastClient();
-      
+
       try {
          broadcastSocket = new DatagramSocket(BROADCAST_FIXED_PORT);
       } catch (SocketException e) {
@@ -125,6 +130,17 @@ public class BroadcastClient {
    //
    // class
    //
+   
+   public static class HostHttpServerInfo {
+      public final InetSocketAddress address;
+      public final String id;
+
+      public HostHttpServerInfo(InetSocketAddress address, String id) {
+         super();
+         this.address = address;
+         this.id = id;
+      }
+   }
 
    private class BroadcastHandler implements Runnable {
 
@@ -143,19 +159,35 @@ public class BroadcastClient {
 
             // we don't care about encoding/etc for this?
             String data = new String(buffer, 0, packet.getLength());
-            Log.i(App.TAG, "BroadcastClient got packet " + data);
+            Log.d(App.TAG, "BroadcastClient got packet " + data);
 
             if (data != null && data.length() > 0) {
-               String hostPortData = data.substring(data.indexOf("~") + 1, data.length());
-               ///System.out.println("****** hostPortData:" + hostPortData);
-               hostIpAddress = hostPortData.substring(0, hostPortData.indexOf(":"));
-               hostPort = hostPortData.substring(hostPortData.indexOf(":") + 1, hostPortData.length());
 
-               if (hostIpAddress != null && hostPort != null) {
-                  Log.e(App.TAG, "BroadcastClient got host data from broadcast host:" + hostIpAddress + " port:"
-                           + hostPort);
-                  // NOTE once a host broadcast is received the broadcast client STOPS ITSELF (but does not clear just found host info)
-                  stop();
+               if (!data.contains(DELIMITER)) {
+                  Log.e(App.TAG, "BroadcastClient got invalid data from broadcast host:" + data);
+               }
+
+               else {
+
+                  // four parts
+                  // EMBIGGEN_HOST~install_id~hostip~port
+                  String[] parts = data.split(DELIMITER);
+
+                  if (parts == null || parts.length != 4) {
+                     Log.e(App.TAG, "BroadcastClient got invalid parts from data:" + Arrays.toString(parts));
+                  } else {
+
+                     hostId = parts[1];
+                     hostIpAddress = parts[2];
+                     hostPort = parts[3];
+
+                     if (hostIpAddress != null && hostPort != null) {
+                        Log.e(App.TAG, "BroadcastClient got host data from broadcast host:" + hostIpAddress + " port:"
+                                 + hostPort);
+                        // NOTE once a host broadcast is received the broadcast client STOPS ITSELF (but does not clear just found host info)
+                        stop();
+                     }
+                  }
                }
             }
 

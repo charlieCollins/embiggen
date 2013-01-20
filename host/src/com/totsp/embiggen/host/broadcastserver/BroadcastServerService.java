@@ -17,6 +17,8 @@ public class BroadcastServerService extends Service {
    private Looper backLooper; // background looper, only used here internally
 
    private BroadcastServer server;
+   
+   private App app;
 
    public class BroadcastServerServiceLocalBinder extends Binder {
       public BroadcastServerService getService() {
@@ -35,7 +37,7 @@ public class BroadcastServerService extends Service {
 
       Log.i(App.TAG, "BroadcastServerService onCreate");
 
-      final App app = (App) this.getApplication();
+      app = (App) this.getApplication();
       startServer(app.getBus(), app.getHttpServerPort());
    }
 
@@ -64,7 +66,7 @@ public class BroadcastServerService extends Service {
             if (server != null) {
                stopServer();
             }
-            server = new BroadcastServer(BroadcastServerService.this, bus);
+            server = new BroadcastServer(app);
             server.start(port);
          }
       });

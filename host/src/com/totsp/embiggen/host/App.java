@@ -36,7 +36,7 @@ public class App extends Application {
    private HTTPServerService httpServerService;
    private TextRequestCallback httpServerTextRequestCallback;
    private int httpServerPort;
-
+   
    private ServiceConnection broadcastServerServiceConnection;
    private boolean broadcastServerServiceBound;
 
@@ -178,6 +178,12 @@ public class App extends Application {
    public String getInstallationId() {
       return Installation.id(this);
    }
+   
+   // using last 6 chars of unique installId as hostId (should be unique enough 99% of time)
+   public String getHostId() {
+      String installId = getInstallationId();      
+      return installId.substring(installId.length() - 6, installId.length());
+   }
 
    public Bus getBus() {
       return this.bus;
@@ -185,15 +191,13 @@ public class App extends Application {
 
    public int getHttpServerPort() {
       return this.httpServerPort;
-   }
+   }  
 
    //
    // priv
    //
 
-   // TODO figure out why this helps/works? sometimes bus.post does not work (not received by subscribers) but also does not fail?
    private synchronized void runOnMainThread(Runnable r) {
       new Handler(getMainLooper()).post(r);
    }
-
 }

@@ -3,11 +3,11 @@
 
     <string name="getStarted">Use Embiggen to share photos and videos among Android devices and make them embigger!</string>
     
-    <string name="getStartedHostHint">Embiggen requires a HOST to display shared content, get the Embiggen HOST app and run it on a tablet or Google TV</string>
-    <string name="getStartedControllerHint">Once the host is running, as many Embiggen CONTROLLERs as you want can connect and share</string>
-    <string name="getStartedNetHint">Embiggen does *not* send your content to the cloud, all networking is local, host and controllers must be on the same WiFi network</string>
+    <string name="getStartedHostHint">Embiggen requires a HOST to display stuff, get the Embiggen HOST app and run it on a tablet or Google TV</string>
+    <string name="getStartedNetHint">Embiggen does *not* send your content to the cloud, all networking is local, devices must be on the same WiFi network</string>
     
     <string name="help"><b>TODO</b></string>
     
+    <string name="network_connection_not_present">No network connection found, please check your network settings and try again</string>    
 
 </resources>

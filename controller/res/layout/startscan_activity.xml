@@ -46,17 +46,7 @@
             android:layout_margin="5dp"           
             android:textStyle="bold"
             android:gravity="center"
-            android:text="@string/getStartedHostHint" />
-        
-        <TextView
-            android:id="@+id/get_started_controller_hint"
-            style="@style/altFontSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"            
-            android:layout_margin="5dp"           
-            android:textStyle="bold"
-            android:gravity="center"
-            android:text="@string/getStartedControllerHint" />
+            android:text="@string/getStartedHostHint" />        
         
         <TextView
             android:id="@+id/get_started_net_hint"

@@ -3,10 +3,8 @@ package com.totsp.embiggen.host.broadcastserver;
 import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
 import android.util.Log;
 
-import com.squareup.otto.Bus;
 import com.totsp.android.util.NetworkUtil;
 import com.totsp.embiggen.host.App;
 
@@ -25,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * (NOTE: tried multicast, had issues on Android, need to look into mDNS/SSDP, but this much simpler.)
  * 
  * NOTE: Format of the discovery message is as follows:
- * EMBIGGEN_HOST~1.2.3.4:1234
+ * EMBIGGEN_HOST~INSTALL_ID~1.2.3.4~1234
  * 
  * @author ccollins
  *
@@ -33,10 +31,6 @@ import java.util.concurrent.TimeUnit;
 public class BroadcastServer {
 
    // TODO validate that device has network connectivity, and that it's LAN (and add connectivity receiver?)
-
-   // TODO need to figure out how clients can select a particular server if more than one present?
-
-   // TODO use BaseStartStop for this
 
    // TODO socket timeouts and options
 
@@ -57,17 +51,18 @@ public class BroadcastServer {
    private DatagramSocket broadcastSocket;
    private final ExecutorService broadcastExecutor;
 
-   private Context context;
-   private final Bus bus; // TODO inject bus
+   private final App app; // inject?
+   private final String hostId;
 
-   public BroadcastServer(Context context, Bus bus) {
-      wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-      Log.i(App.TAG, "BroadcastServer instantiated");
-
-      this.context = context;
-      this.bus = bus;
-
+   public BroadcastServer(App app) {
+      
+      this.app = app;
+      
+      hostId = app.getHostId();
+      wifiManager = (WifiManager) app.getSystemService(Context.WIFI_SERVICE);
       broadcastExecutor = Executors.newFixedThreadPool(1);
+      
+      Log.i(App.TAG, "BroadcastServer instantiated");      
    }
 
    public void start(int port) {
@@ -152,9 +147,12 @@ public class BroadcastServer {
       if (broadcastSocket == null || !broadcastSocket.isBound()) {
          initBroadcastServer();
       } else {
-         // as an ode to the RPG programmers of yore, I use the tilde as a delimeter! (this sucks balls BTW)
+         // as an ode to the RPG programmers of yore, I use the tilde as a delimeter! 
+         // (this sucks balls BTW)
+         // (and note we call "getWifiIpAddress" every time here, intentionally (in case it has changed))
          String wifiIpAddress = NetworkUtil.getWifiIpAddress(wifiManager);
-         final String msg = EMBIGGEN_HOST + DELIMITER + wifiIpAddress + ":" + port;
+         final String msg =
+                  EMBIGGEN_HOST + DELIMITER + hostId + DELIMITER + wifiIpAddress + DELIMITER + port;
 
          broadcastExecutor.submit(new Runnable() {
             public void run() {
@@ -180,8 +178,10 @@ public class BroadcastServer {
       return InetAddress.getByAddress(quads);
    }
 
+   /*
    // BroadcastServer is off the main thread, so to run stuff back on main, use this
    private synchronized void runOnMainThread(Runnable r) {
-      new Handler(context.getMainLooper()).post(r);
+      new Handler(app.getMainLooper()).post(r);
    }
+   */
 }

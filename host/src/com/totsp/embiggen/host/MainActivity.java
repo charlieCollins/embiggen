@@ -1,16 +1,21 @@
 package com.totsp.embiggen.host;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.koushikdutta.urlimageviewhelper.UrlImageViewCallback;
 import com.koushikdutta.urlimageviewhelper.UrlImageViewHelper;
 import com.squareup.otto.Subscribe;
+import com.totsp.android.util.NetworkUtil;
 import com.totsp.embiggen.host.event.DisplayMediaEvent;
 
 /**
@@ -27,18 +32,29 @@ final public class MainActivity extends BaseActivity {
    private ProgressBar loaderProgressBar;
    private ImageView shareImageView;
    private VideoView shareVideoView;
-
-   // TODO network state receiver in App
+   private TextView hostId;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
 
-      logoImageView = (ImageView) findViewById(R.id.logo_image_view);
+      logoImageView = (ImageView) findViewById(R.id.logo_image);
       loaderProgressBar = (ProgressBar) findViewById(R.id.footer_progress_bar);
-      shareImageView = (ImageView) findViewById(R.id.share_image_view);
-      shareVideoView = (VideoView) findViewById(R.id.share_video_view);
+      shareImageView = (ImageView) findViewById(R.id.share_image);
+      shareVideoView = (VideoView) findViewById(R.id.share_video);
+      hostId = (TextView) findViewById(R.id.footer_hostid);
+      
+      hostId.setText(getString(R.string.hostid_prefix) + app.getHostId());
+   }
+
+   @Override
+   protected void onResume() {
+      if (!NetworkUtil.connectionPresent((ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE))) {
+         Toast.makeText(this, getString(R.string.network_connection_not_present), Toast.LENGTH_LONG).show();
+         finish();
+      }
+      super.onResume();     
    }
 
    @Override

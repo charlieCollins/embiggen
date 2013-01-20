@@ -20,12 +20,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.totsp.android.util.NetworkUtil;
+import com.totsp.embiggen.broadcastclient.BroadcastClient.HostHttpServerInfo;
 import com.totsp.embiggen.component.crouton.Crouton;
 import com.totsp.embiggen.component.crouton.Style;
 import com.totsp.server.util.SimpleHttpClient;
 
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
 import java.net.URLEncoder;
 
 public class LaunchGalleryFragment extends BaseFragment {
@@ -91,11 +91,13 @@ public class LaunchGalleryFragment extends BaseFragment {
          filePath = filePath.replace(" ", "+");
       }
 
-      InetSocketAddress hostAddr = app.getBroadcastClientService().getHostHttpServerInfo();
-      if (hostAddr == null) {
+      HostHttpServerInfo hostInfo = app.getBroadcastClientService().getHostHttpServerInfo();
+      if (hostInfo == null) {
          Log.e(App.TAG, "Cannot send message to host, host not known at this time");
          return;
       }
+      
+      // TODO validate that hostInfo is populated and has correct info 
 
       String localUrl =
                "http://"
@@ -108,7 +110,8 @@ public class LaunchGalleryFragment extends BaseFragment {
       }
 
       final String urlToSendMessageToHost =
-               "http://" + hostAddr.getHostName() + ":" + hostAddr.getPort() + "?DISPLAY_MEDIA=" + localUrl;
+               "http://" + hostInfo.address.getHostName() + ":" + hostInfo.address.getPort() + "?DISPLAY_MEDIA="
+                        + localUrl;
 
       Log.d(App.TAG, "sendChoiceToHost filePath:" + filePath);
       Log.d(App.TAG, "sendChoiceToHost invoking URL:" + urlToSendMessageToHost);
@@ -175,8 +178,8 @@ public class LaunchGalleryFragment extends BaseFragment {
 
             options.inJustDecodeBounds = false;
             Bitmap bitmap = BitmapFactory.decodeFile(result, options);
-            selectedThumbnail.setImageBitmap(bitmap);            
-            
+            selectedThumbnail.setImageBitmap(bitmap);
+
             Crouton.makeText(getActivity(), "Sent selected item to host", Style.INFO).show();
 
             sendChoiceToHost(result);

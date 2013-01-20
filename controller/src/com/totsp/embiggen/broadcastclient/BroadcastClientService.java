@@ -9,8 +9,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.totsp.embiggen.App;
-
-import java.net.InetSocketAddress;
+import com.totsp.embiggen.broadcastclient.BroadcastClient.HostHttpServerInfo;
 
 public class BroadcastClientService extends Service {
 
@@ -110,7 +109,7 @@ public class BroadcastClientService extends Service {
    }
 
    // clients can use this to check the discovery status, if not null, host has been discovered
-   public InetSocketAddress getHostHttpServerInfo() {
+   public HostHttpServerInfo getHostHttpServerInfo() {
       if (client != null) {
          return client.getHostHttpServerInfo();
       }
