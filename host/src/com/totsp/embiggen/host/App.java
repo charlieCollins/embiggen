@@ -11,6 +11,8 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.google.analytics.tracking.android.GAServiceManager;
+import com.google.analytics.tracking.android.GoogleAnalytics;
 import com.google.analytics.tracking.android.Tracker;
 import com.squareup.otto.Bus;
 import com.totsp.android.util.Installation;
@@ -25,6 +27,8 @@ import java.util.Random;
 public class App extends Application {
 
    public static final String TAG = "Embiggen-Host";
+   
+   private static final String GA_ID = "UA-38036038-1";
 
    private SharedPreferences prefs;
 
@@ -116,19 +120,14 @@ public class App extends Application {
       bindService(new Intent(this, BroadcastServerService.class), broadcastServerServiceConnection,
                Context.BIND_AUTO_CREATE);
 
-      // TODO google analytics
-      String gaId = null;
-      /*
-      if (gaId != null && !gaId.trim().equals("")) {
+      if (GA_ID != null) {
          // NOTE intentionally NOT using analytics.xml resource because we must update settings at runtime (such as which id)
          GoogleAnalytics ga = GoogleAnalytics.getInstance(getApplicationContext());
-         ///ga.setDebug(true);
-         gaTracker = ga.getTracker(gaId);
+         gaTracker = ga.getTracker(GA_ID);
          ga.setDefaultTracker(gaTracker);
          GAServiceManager.getInstance().setDispatchPeriod(60);
          gaTracker.setStartSession(true);
       }
-      */
    }
 
    // not guaranteed to be called, but plays nice most of the time

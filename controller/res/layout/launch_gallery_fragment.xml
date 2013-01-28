@@ -7,13 +7,24 @@
     android:orientation="vertical" >
 
     <Button
-        android:id="@+id/launch_button"
+        android:id="@+id/launch_button_photo"
+        style="@style/altFontMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/button_blue"
+        android:padding="10dp"
+        android:text="Pick Photo From Gallery" />
+
+    <Button
+        android:id="@+id/launch_button_video"
         style="@style/altFontMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:background="@drawable/button_blue"
-        android:text="Pick From Gallery" />
+        android:padding="10dp"
+        android:text="Pick Video From Gallery" />
 
     <ImageView
         android:id="@+id/selected_thumbnail"

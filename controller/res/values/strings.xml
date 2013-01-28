@@ -3,7 +3,7 @@
 
     <string name="getStarted">Use Embiggen to share photos and videos among Android devices and make them embigger!</string>
     
-    <string name="getStartedHostHint">Embiggen requires a HOST to display stuff, get the Embiggen HOST app and run it on a tablet or Google TV</string>
+    <string name="getStartedHostHint">Embiggen requires a HOST to display stuff, get the HOST app and run it on a tablet or Google TV</string>
     <string name="getStartedNetHint">Embiggen does *not* send your content to the cloud, all networking is local, devices must be on the same WiFi network</string>
     
     <string name="help"><b>TODO</b></string>

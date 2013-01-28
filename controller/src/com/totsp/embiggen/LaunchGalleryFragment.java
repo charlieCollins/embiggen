@@ -21,18 +21,21 @@ import android.widget.ImageView;
 
 import com.totsp.android.util.NetworkUtil;
 import com.totsp.embiggen.broadcastclient.BroadcastClient.HostHttpServerInfo;
-import com.totsp.embiggen.component.crouton.Crouton;
-import com.totsp.embiggen.component.crouton.Style;
 import com.totsp.server.util.SimpleHttpClient;
+
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 public class LaunchGalleryFragment extends BaseFragment {
 
-   public static final int PICK_IMAGE = 1;
+   public static final int PICK_PHOTO = 1;
+   public static final int PICK_VIDEO = 2;
 
-   private Button launchButton;
+   private Button launchButtonPhoto;
+   private Button launchButtonVideo;
    private ImageView selectedThumbnail;
 
    @Override
@@ -54,11 +57,19 @@ public class LaunchGalleryFragment extends BaseFragment {
    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       View rootView = inflater.inflate(R.layout.launch_gallery_fragment, container, false);
       selectedThumbnail = (ImageView) rootView.findViewById(R.id.selected_thumbnail);
-      launchButton = (Button) rootView.findViewById(R.id.launch_button);
-      launchButton.setOnClickListener(new OnClickListener() {
+      launchButtonPhoto = (Button) rootView.findViewById(R.id.launch_button_photo);
+      launchButtonPhoto.setOnClickListener(new OnClickListener() {
          public void onClick(View v) {
             startActivityForResult(new Intent(Intent.ACTION_PICK,
-                     android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI), PICK_IMAGE);
+                     android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI), PICK_PHOTO);
+         }
+      });
+
+      launchButtonVideo = (Button) rootView.findViewById(R.id.launch_button_video);
+      launchButtonVideo.setOnClickListener(new OnClickListener() {
+         public void onClick(View v) {
+            startActivityForResult(new Intent(Intent.ACTION_PICK,
+                     android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI), PICK_VIDEO);
          }
       });
       return rootView;
@@ -76,12 +87,20 @@ public class LaunchGalleryFragment extends BaseFragment {
       Log.d(App.TAG, "ONACTIVITYRESULT: requestCode:" + requestCode + " resultCode:" + resultCode);
 
       switch (requestCode) {
-         case PICK_IMAGE:
+         case PICK_PHOTO:
             if (resultCode == Activity.RESULT_OK) {
                Uri selectedImageUri = intent.getData();
                Log.d(App.TAG, "selectedImageUri:" + selectedImageUri);
-               new ProcessSelectedItemTask(getActivity()).execute(selectedImageUri);
+               new ProcessSelectedItemTask(getActivity(), PICK_PHOTO).execute(selectedImageUri);
             }
+            break;
+         case PICK_VIDEO:
+            if (resultCode == Activity.RESULT_OK) {
+               Uri selectedImageUri = intent.getData();
+               Log.d(App.TAG, "selectedImageUri:" + selectedImageUri);
+               new ProcessSelectedItemTask(getActivity(), PICK_VIDEO).execute(selectedImageUri);
+            }
+            break;
       }
    }
 
@@ -96,8 +115,6 @@ public class LaunchGalleryFragment extends BaseFragment {
          Log.e(App.TAG, "Cannot send message to host, host not known at this time");
          return;
       }
-      
-      // TODO validate that hostInfo is populated and has correct info 
 
       String localUrl =
                "http://"
@@ -106,7 +123,8 @@ public class LaunchGalleryFragment extends BaseFragment {
       try {
          localUrl = URLEncoder.encode(localUrl, "UTF-8");
       } catch (UnsupportedEncodingException e) {
-         // ignore?
+         Log.e(App.TAG, "error encoding URL", e);
+         return;
       }
 
       final String urlToSendMessageToHost =
@@ -134,9 +152,11 @@ public class LaunchGalleryFragment extends BaseFragment {
    private class ProcessSelectedItemTask extends AsyncTask<Uri, Void, String> {
 
       private Context context;
+      private int mediaType;
 
-      public ProcessSelectedItemTask(Context context) {
+      public ProcessSelectedItemTask(Context context, int mediaType) {
          this.context = context;
+         this.mediaType = mediaType;
       }
 
       @Override
@@ -165,20 +185,24 @@ public class LaunchGalleryFragment extends BaseFragment {
 
       @Override
       protected void onPostExecute(String result) {
-         Log.d(App.TAG, "GetImageFilePathTask returned:" + result);
+         Log.d(App.TAG, "ProcessSelectedItemTask returned:" + result);
          if (result != null) {
 
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(result, options);
-            int height = options.outHeight;
-            int width = options.outWidth;
-            //String imageType = options.outMimeType;
-            options.inSampleSize = calculateInSampleSize(options, width, height);
+            // TODO get thumbnail for videos
+            
+            if (mediaType == PICK_PHOTO) {
+               BitmapFactory.Options options = new BitmapFactory.Options();
+               options.inJustDecodeBounds = true;
+               BitmapFactory.decodeFile(result, options);
+               int height = options.outHeight;
+               int width = options.outWidth;
+               //String imageType = options.outMimeType;
+               options.inSampleSize = calculateInSampleSize(options, width, height);
 
-            options.inJustDecodeBounds = false;
-            Bitmap bitmap = BitmapFactory.decodeFile(result, options);
-            selectedThumbnail.setImageBitmap(bitmap);
+               options.inJustDecodeBounds = false;
+               Bitmap bitmap = BitmapFactory.decodeFile(result, options);
+               selectedThumbnail.setImageBitmap(bitmap);
+            }
 
             Crouton.makeText(getActivity(), "Sent selected item to host", Style.INFO).show();
 

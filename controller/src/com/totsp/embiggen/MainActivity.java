@@ -25,6 +25,6 @@ public class MainActivity extends BaseFragmentActivity {
    }
 
    protected String getViewName() {
-      return "MainActivity";
+      return "MainActivity-Controller";
    }
 }

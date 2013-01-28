@@ -64,20 +64,21 @@ public class BroadcastClient {
       hostId = null;
       hostIpAddress = null;
       hostPort = null;
-   }   
+   }
 
    public HostHttpServerInfo getHostHttpServerInfo() {
       InetSocketAddress isa = null;
-      if (hostIpAddress != null && hostPort != null) {
+      if (hostIpAddress != null && hostPort != null && hostId != null) {
          try {
             InetAddress ia = InetAddress.getByName(hostIpAddress);
             isa = new InetSocketAddress(ia, Integer.valueOf(hostPort));
+            Log.i(App.TAG, "BroadcastClient getHostHttpServerInfo:" + isa);
+            return new HostHttpServerInfo(isa, hostId);
          } catch (IOException e) {
             Log.e(App.TAG, "Error getting hostInetAddress", e);
          }
       }
-      Log.i(App.TAG, "BroadcastClient getHostHttpServerInfo:" + isa);
-      return new HostHttpServerInfo(isa, hostId);
+      return null;
    }
 
    //
@@ -122,7 +123,9 @@ public class BroadcastClient {
          } catch (InterruptedException e) {
             Log.e(App.TAG, "Error stopping broadcast client:" + e.getMessage(), e);
          }
-         broadcastExecutor.shutdownNow();
+         if (broadcastExecutor != null) {
+            broadcastExecutor.shutdownNow();
+         }
          broadcastExecutor = null;
       }
    }
@@ -130,7 +133,7 @@ public class BroadcastClient {
    //
    // class
    //
-   
+
    public static class HostHttpServerInfo {
       public final InetSocketAddress address;
       public final String id;

@@ -9,7 +9,6 @@
     <string name="network_connection_restored">Network connection restored</string>
     <string name="network_connection_not_present">No network connection found, please check your network settings and try again</string>
     
-    <string name="hostid_prefix">Host ID:</string>
-    
+    <string name="hostid_prefix">Host ID:</string>    
     
 </resources>

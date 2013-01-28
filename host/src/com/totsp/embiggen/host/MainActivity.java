@@ -2,11 +2,16 @@ package com.totsp.embiggen.host;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,7 +49,7 @@ final public class MainActivity extends BaseActivity {
       shareImageView = (ImageView) findViewById(R.id.share_image);
       shareVideoView = (VideoView) findViewById(R.id.share_video);
       hostId = (TextView) findViewById(R.id.footer_hostid);
-      
+
       hostId.setText(getString(R.string.hostid_prefix) + app.getHostId());
    }
 
@@ -54,12 +59,36 @@ final public class MainActivity extends BaseActivity {
          Toast.makeText(this, getString(R.string.network_connection_not_present), Toast.LENGTH_LONG).show();
          finish();
       }
-      super.onResume();     
+      super.onResume();
    }
 
    @Override
    protected String getViewName() {
-      return "HostMain";
+      return "MainActivity-Host";
+   }
+
+   // TODO wire in commands so controller can also send these, not just host keyboard
+   @Override
+   public boolean onKeyDown(int keyCode, KeyEvent event) {
+      switch (keyCode) {
+         case KeyEvent.KEYCODE_MEDIA_PAUSE:
+            if (shareVideoView.isShown() && shareVideoView.canPause()) {
+               shareVideoView.pause();
+            }
+            return true;
+         case KeyEvent.KEYCODE_MEDIA_PLAY:
+            if (shareVideoView.isShown() && !shareVideoView.isPlaying()) {
+               shareVideoView.start();
+            }
+            return true;
+         case KeyEvent.KEYCODE_S: // skip when you don't have media_next
+            if (shareVideoView.isShown()) {
+               shareVideoView.stopPlayback();
+               shareVideoView.setVisibility(View.GONE);
+            }
+            return true;
+      }
+      return super.onKeyDown(keyCode, event);
    }
 
    //
@@ -70,21 +99,52 @@ final public class MainActivity extends BaseActivity {
 
    @Subscribe
    public void displayMedia(DisplayMediaEvent e) {
-      Log.d(App.TAG, "MainActivity caught display media event:" + e);
 
-      logoImageView.setVisibility(View.GONE);
+      // determine media type from filename
+      String fileExt = MimeTypeMap.getFileExtensionFromUrl(e.getUrlString());
+      MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+      String mimeType = null;
+      if (fileExt != null) {
+         mimeType = mimeTypeMap.getMimeTypeFromExtension(fileExt);
+      }
 
-      // TODO determine if video or image, etc (now assume image)      
-      shareVideoView.setVisibility(View.GONE);
-      shareImageView.setVisibility(View.VISIBLE);
+      Log.d(App.TAG, "MainActivity caught display media event:" + e + " fileExt:" + fileExt + " mimeType:" + mimeType);
 
-      loaderProgressBar.setVisibility(View.VISIBLE);
-      UrlImageViewHelper.setUrlDrawable(shareImageView, e.getUrlString(), new UrlImageViewCallback() {
-         @Override
-         public void onLoaded(ImageView imageView, Drawable loadedDrawable, String url, boolean loadedFromCache) {
-            loaderProgressBar.setVisibility(View.INVISIBLE);
-         }
-      });
+      if (mimeType != null && mimeType.startsWith("image")) {
+         logoImageView.setVisibility(View.GONE);
+
+         shareVideoView.setVisibility(View.GONE);
+         shareImageView.setVisibility(View.VISIBLE);
+
+         loaderProgressBar.setVisibility(View.VISIBLE);
+         UrlImageViewHelper.setUrlDrawable(shareImageView, e.getUrlString(), new UrlImageViewCallback() {
+            @Override
+            public void onLoaded(ImageView imageView, Drawable loadedDrawable, String url, boolean loadedFromCache) {
+               loaderProgressBar.setVisibility(View.INVISIBLE);
+            }
+         });
+      } else if (mimeType != null && mimeType.startsWith("")) {
+         logoImageView.setVisibility(View.GONE);
+
+         shareVideoView.setVisibility(View.VISIBLE);
+         shareImageView.setVisibility(View.GONE);
+
+         loaderProgressBar.setVisibility(View.VISIBLE);
+         shareVideoView.setVideoURI(Uri.parse(e.getUrlString()));
+         shareVideoView.setMediaController(new MediaController(this));
+         shareVideoView.requestFocus();
+         shareVideoView.start();
+         shareVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+               loaderProgressBar.setVisibility(View.INVISIBLE);               
+            }
+         });
+      } else if (mimeType != null) {
+         Toast.makeText(this, "Sorry, unknown/unsupported file type:" + mimeType, Toast.LENGTH_LONG).show();
+      } else {
+         Log.w(App.TAG, "NULL MIME TYPE IN DISPLAY MEDIA urlString:" + e.getUrlString());
+      }
    }
 
    //
@@ -94,30 +154,4 @@ final public class MainActivity extends BaseActivity {
    private void setFullscreen(boolean fullscreen) {
 
    }
-
-   //
-   // tasks
-   //
-
-   /*
-   private class GetImageTask extends AsyncTask<String, Void, Bitmap> {
-
-      public GetImageTask() {
-      }
-
-      @Override
-      protected void onPreExecute() {
-      }
-
-      @Override
-      protected Bitmap doInBackground(String... args) {
-         return imageUtil.get(args[0]);
-      }
-
-      @Override
-      protected void onPostExecute(Bitmap result) {
-         shareImageView.setImageBitmap(result);
-      }
-   }
-   */
 }

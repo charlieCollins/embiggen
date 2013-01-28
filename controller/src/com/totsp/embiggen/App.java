@@ -18,7 +18,6 @@ import com.squareup.otto.Bus;
 import com.totsp.android.util.Installation;
 import com.totsp.embiggen.broadcastclient.BroadcastClientService;
 import com.totsp.embiggen.broadcastclient.BroadcastClientService.BroadcastClientServiceLocalBinder;
-import com.totsp.embiggen.util.RuntimeLoader;
 import com.totsp.server.HTTPServerService;
 import com.totsp.server.HTTPServerService.HTTPServerServiceLocalBinder;
 
@@ -26,10 +25,10 @@ public class App extends Application {
 
    public static final String TAG = "Embiggen";
 
+   private static final String GA_ID = "UA-38036038-1";
+
    protected SharedPreferences prefs;
    protected Bus bus;
-
-   private RuntimeLoader runtimeLoader;
 
    private ConnectivityManager cMgr;
 
@@ -56,9 +55,6 @@ public class App extends Application {
       super.onCreate();
 
       Log.i(TAG, "EMBIGGEN Application onCreate");
-
-      runtimeLoader = new RuntimeLoader(this);
-      Log.i(TAG, "   using environment " + runtimeLoader.getEnv());
 
       bus = new Bus();
       bus.register(this);
@@ -109,17 +105,14 @@ public class App extends Application {
       bindService(new Intent(this, BroadcastClientService.class), broadcastClientServiceConnection,
                Context.BIND_AUTO_CREATE);
 
-      String gaId = runtimeLoader.getGoogleAnalyticsId();
-      if (gaId != null && !gaId.trim().equals("")) {
-         // NOTE intentionally NOT using analytics.xml resource because we must update settings at runtime (such as which id)
+      if (GA_ID != null) {
          GoogleAnalytics ga = GoogleAnalytics.getInstance(getApplicationContext());
          ///ga.setDebug(true);
-         gaTracker = ga.getTracker(gaId);
+         gaTracker = ga.getTracker(GA_ID);
          ga.setDefaultTracker(gaTracker);
          GAServiceManager.getInstance().setDispatchPeriod(60);
          gaTracker.setStartSession(true);
       }
-
    }
 
    @Override
@@ -146,7 +139,7 @@ public class App extends Application {
       if (gaTracker != null) {
          gaTracker.close();
       }
-   }  
+   }
 
    //
    // ga
@@ -163,11 +156,11 @@ public class App extends Application {
          gaTracker.trackEvent(category, action, label, null);
       }
    }
-   
+
    //
    // accessors
    //
-   
+
    public SharedPreferences getPrefs() {
       return this.prefs;
    }
@@ -175,7 +168,7 @@ public class App extends Application {
    public String getInstallationId() {
       return Installation.id(this);
    }
-   
+
    // TODO don't expose entire service via app?
    public BroadcastClientService getBroadcastClientService() {
       return this.broadcastClientService;

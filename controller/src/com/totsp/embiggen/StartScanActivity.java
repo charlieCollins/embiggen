@@ -89,6 +89,7 @@ public class StartScanActivity extends BaseFragmentActivity {
                         .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                            @Override
                            public void onClick(DialogInterface dialog, int which) {
+                              app.getBroadcastClientService().clearHostHttpServerInfo();
                               hostDialog.dismiss();
                            }
                         }).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -164,7 +165,7 @@ public class StartScanActivity extends BaseFragmentActivity {
 
    private void startScan() {
 
-      // TODO this scanning state path stuff is a convoluted mess, clean up
+      // FUTURE this scanning state path stuff is convoluted, clean up
 
       HostHttpServerInfo hostInfo = null;
       if (app.getBroadcastClientService() != null) {
@@ -193,7 +194,6 @@ public class StartScanActivity extends BaseFragmentActivity {
                         pd.dismiss();
                         hostDialog.setMessage("Would you like to use this host:" + hostInfo.id);
                         hostDialog.show();
-                        startActivity(new Intent(StartScanActivity.this, MainActivity.class));
                         cancel();
                      }
                   }
