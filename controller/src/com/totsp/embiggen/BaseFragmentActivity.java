@@ -3,7 +3,6 @@ package com.totsp.embiggen;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.widget.TextView;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -19,7 +18,7 @@ public abstract class BaseFragmentActivity extends SherlockFragmentActivity {
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      Log.v(App.TAG, "BaseFragmentActivity onCreate() " + this.getClass().getSimpleName());
+      ///Log.v(App.TAG, "BaseFragmentActivity onCreate() " + this.getClass().getSimpleName());
       this.app = (App) this.getApplication();
 
       this.actionBar = this.getSupportActionBar();
@@ -37,13 +36,13 @@ public abstract class BaseFragmentActivity extends SherlockFragmentActivity {
    protected void onResume() {
       super.onResume();
       this.app.bus.register(this);
-      Log.v(App.TAG, "BaseFragmentActivity onPause() " + this.getClass().getSimpleName());
+      ///Log.v(App.TAG, "BaseFragmentActivity onPause() " + this.getClass().getSimpleName());
    }
 
    @Override
    protected void onPause() {
       super.onPause();
-      Log.v(App.TAG, "BaseFragmentActivity onPause() " + this.getClass().getSimpleName());
+      ///Log.v(App.TAG, "BaseFragmentActivity onPause() " + this.getClass().getSimpleName());
       if (progressDialog != null) {
          progressDialog.dismiss();
       }

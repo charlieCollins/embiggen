@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -33,24 +34,28 @@ final public class MainActivity extends BaseActivity {
    // TODO help/about
    // TODO preferences for quality settings, etc?
 
-   private ImageView logoImageView;
    private ProgressBar loaderProgressBar;
    private ImageView shareImageView;
    private VideoView shareVideoView;
    private TextView hostId;
+   
+   protected PowerManager.WakeLock wakeLock;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
-
-      logoImageView = (ImageView) findViewById(R.id.logo_image);
+      
       loaderProgressBar = (ProgressBar) findViewById(R.id.footer_progress_bar);
       shareImageView = (ImageView) findViewById(R.id.share_image);
       shareVideoView = (VideoView) findViewById(R.id.share_video);
       hostId = (TextView) findViewById(R.id.footer_hostid);
 
       hostId.setText(getString(R.string.hostid_prefix) + app.getHostId());
+      
+      PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+      wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, App.TAG);
+      wakeLock.acquire();
    }
 
    @Override
@@ -60,6 +65,14 @@ final public class MainActivity extends BaseActivity {
          finish();
       }
       super.onResume();
+   }
+   
+   
+
+   @Override
+   protected void onDestroy() {
+      wakeLock.release();
+      super.onDestroy();
    }
 
    @Override
@@ -111,8 +124,6 @@ final public class MainActivity extends BaseActivity {
       Log.d(App.TAG, "MainActivity caught display media event:" + e + " fileExt:" + fileExt + " mimeType:" + mimeType);
 
       if (mimeType != null && mimeType.startsWith("image")) {
-         logoImageView.setVisibility(View.GONE);
-
          shareVideoView.setVisibility(View.GONE);
          shareImageView.setVisibility(View.VISIBLE);
 
@@ -123,9 +134,7 @@ final public class MainActivity extends BaseActivity {
                loaderProgressBar.setVisibility(View.INVISIBLE);
             }
          });
-      } else if (mimeType != null && mimeType.startsWith("")) {
-         logoImageView.setVisibility(View.GONE);
-
+      } else if (mimeType != null && mimeType.startsWith("video")) {
          shareVideoView.setVisibility(View.VISIBLE);
          shareImageView.setVisibility(View.GONE);
 
@@ -151,7 +160,9 @@ final public class MainActivity extends BaseActivity {
    // private util
    //
 
+   /*
    private void setFullscreen(boolean fullscreen) {
 
    }
+   */
 }

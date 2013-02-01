@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Embiggen Host</string>    
-    <string name="footer_text">Download the Embiggen controller to share</string>
+    <string name="footer_text">Get the Embiggen Controller to share</string>
     <string name="share_text">Use your mobile to share pics and videos with the host</string>
     <string name="need_network_text">Embiggen needs a network connection. Please check your system settings.</string>
     <string name="video_problem">Sorry, that video can\'t be played, please try another</string>
