@@ -141,13 +141,11 @@ public class BroadcastServer {
    }
 
    private void sendBroadcast(int port) {
-      ///Log.v(App.TAG, "BroadcastServer sendBroadcast");
-
       // broadcast the server host/port          
       if (broadcastSocket == null || !broadcastSocket.isBound()) {
          initBroadcastServer();
       } else {
-         // as an ode to the RPG programmers of yore, I use the tilde as a delimeter! 
+         // as an ode to the RPG programmers of yore, I use the tilde as a delimiter! 
          // (this sucks balls BTW)
          // (and note we call "getWifiIpAddress" every time here, intentionally (in case it has changed))
          String wifiIpAddress = NetworkUtil.getWifiIpAddress(wifiManager);
@@ -164,7 +162,6 @@ public class BroadcastServer {
                }
             }
          });
-         ///Log.v(App.TAG, "   sent broadcast:" + msg);
       }
    }
 
