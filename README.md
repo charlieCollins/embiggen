@@ -17,6 +17,8 @@ Typically there is one host and one or more controllers (multiple controllers ca
 
 See README.md in each sub-project for more info on the host and controllers. 
 
+Embiggen is in the Android Play Store (see binaries links below). 
+
 
 Networking notes
 ----------------
@@ -32,9 +34,14 @@ and the controller HTTP server is used for serving content to the host.
 
 Disclaimer
 ----------
-This project is in the ALPHA stage, there is still a lot to do. 
+This project is in the BETA stage, there is still a lot to do. 
 
 
 Binaries
 ---------
-https://docs.google.com/folder/d/0B1JMWIXokOXsWnQ1dzJ4dHBBc2s/edit
+
+Controller:   
+https://play.google.com/store/apps/details?id=com.totsp.embiggen
+
+Host:   
+https://play.google.com/store/apps/details?id=com.totsp.embiggen.host
